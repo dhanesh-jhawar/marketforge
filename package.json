@@ -1,0 +1,30 @@
+{
+  "name": "marketforge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MarketForge — Indian stock-market learning & virtual trading platform (no real money).",
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev:backend & npm run dev:frontend",
+    "dev:backend": "npm run dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "start:backend": "npm run start --workspace backend",
+    "test": "npm run test --workspace backend",
+    "migrate": "node scripts/db-migrate.js",
+    "seed": "node scripts/db-seed.js",
+    "production": "node --env-file-if-exists=.env backend/src/server.js",
+    "db:migrate": "node scripts/db-migrate.js",
+    "db:seed": "node scripts/db-seed.js",
+    "sync:securities": "node scripts/sync-security-master.js",
+    "check:env": "node scripts/check-env.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

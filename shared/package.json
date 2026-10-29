@@ -1,0 +1,15 @@
+{
+  "name": "@marketforge/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared data contracts (types, normalizers, constants) used by MarketForge frontend and backend.",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./types": "./types/index.js",
+    "./types/*": "./types/*.js",
+    "./constants": "./constants/index.js",
+    "./constants/*": "./constants/*.js"
+  }
+}

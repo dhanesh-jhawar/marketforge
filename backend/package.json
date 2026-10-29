@@ -1,0 +1,24 @@
+{
+  "name": "@marketforge/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=../.env src/server.js",
+    "start": "node --env-file-if-exists=../.env src/server.js",
+    "worker:market": "node --env-file-if-exists=../.env src/workers/marketSync.worker.js",
+    "worker:news": "node --env-file-if-exists=../.env src/workers/newsSync.worker.js",
+    "worker:securities": "node --env-file-if-exists=../.env src/workers/securityMaster.worker.js",
+    "test": "node --test \"tests/**/*.test.js\""
+  },
+  "dependencies": {
+    "@marketforge/shared": "*",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
+    "ws": "^8.18.0"
+  }
+}

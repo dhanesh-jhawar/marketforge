@@ -1,0 +1,91 @@
+/* MarketForge Highcharts Stock Terminal Styling */
+
+.highcharts-container {
+  font-family: var(--font-sans) !important;
+  user-select: none;
+}
+
+.highcharts-background {
+  fill: #050B09 !important;
+}
+
+.highcharts-plot-background {
+  fill: #07130F !important;
+}
+
+.highcharts-grid-line {
+  stroke: rgba(57, 255, 136, 0.08) !important;
+  stroke-dasharray: 2, 2;
+}
+
+.highcharts-axis-line {
+  stroke: rgba(57, 255, 136, 0.2) !important;
+}
+
+.highcharts-axis-labels text {
+  fill: #71877B !important;
+  font-size: 11px !important;
+  font-family: var(--font-mono) !important;
+}
+
+.highcharts-crosshair {
+  stroke: #38D9FF !important;
+  stroke-width: 1px !important;
+  stroke-dasharray: 4, 3 !important;
+}
+
+.highcharts-crosshair-label text {
+  fill: #030807 !important;
+  font-weight: 600 !important;
+  font-family: var(--font-mono) !important;
+}
+
+.highcharts-crosshair-label {
+  fill: #38D9FF !important;
+}
+
+/* Candlesticks remain crisp, subtle terminal shadow around series */
+.highcharts-candlestick-series path {
+  stroke-width: 1.5px !important;
+  filter: drop-shadow(0 0 3px rgba(57, 255, 136, 0.2));
+}
+
+.highcharts-tooltip-box {
+  fill: rgba(7, 19, 15, 0.95) !important;
+  stroke: rgba(57, 255, 136, 0.35) !important;
+  stroke-width: 1px !important;
+  border-radius: 2px !important;
+}
+
+.highcharts-tooltip text {
+  fill: #DDFBEA !important;
+  font-family: var(--font-mono) !important;
+  font-size: 12px !important;
+}
+
+.highcharts-range-selector-buttons text {
+  fill: #71877B !important;
+  font-family: var(--font-mono) !important;
+}
+
+.highcharts-range-selector-buttons .highcharts-button-pressed text {
+  fill: #030807 !important;
+  font-weight: bold !important;
+}
+
+.highcharts-range-selector-buttons .highcharts-button-pressed {
+  fill: #39FF88 !important;
+}
+
+.highcharts-scrollbar,
+.highcharts-navigator {
+  display: block;
+}
+
+.highcharts-navigator-mask-inside {
+  fill: rgba(57, 255, 136, 0.08) !important;
+}
+
+.highcharts-navigator-outline {
+  stroke: rgba(57, 255, 136, 0.2) !important;
+}

@@ -1,0 +1,48 @@
+:root {
+  /* MarketForge Color Palette: Black + Deep Forest Green + Neon Green + Cyan Accents */
+  --bg-primary: #030807;
+  --bg-secondary: #050B09;
+  --bg-surface: #07130F;
+  --bg-panel: #07130F;
+  --bg-card: rgba(7, 19, 15, 0.85);
+  --bg-card-hover: rgba(11, 61, 46, 0.5);
+  --bg-glass: rgba(7, 19, 15, 0.75);
+
+  --border-subtle: rgba(57, 255, 136, 0.12);
+  --border-medium: rgba(57, 255, 136, 0.25);
+  --border-bright: rgba(57, 255, 136, 0.55);
+  --border-cyan: rgba(56, 217, 255, 0.35);
+
+  --text-primary: #DDFBEA;
+  --text-secondary: #94B8A3;
+  --text-muted: #71877B;
+  --text-inverse: #030807;
+
+  /* Market Trading signals */
+  --color-bullish: #39FF88; /* Neon Green */
+  --color-bullish-secondary: #51AF7B;
+  --color-bullish-glow: rgba(57, 255, 136, 0.35);
+  --color-bearish: #FF4D67; /* Crisp Red/Pink for distinction */
+  --color-bearish-glow: rgba(255, 77, 103, 0.35);
+
+  --accent-neon-green: #39FF88;
+  --accent-deep-green: #0B3D2E;
+  --accent-cyan: #38D9FF;
+  --accent-cyan-glow: rgba(56, 217, 255, 0.35);
+  --accent-amber: #F59E0B;
+
+  /* Sharp Geometry: square corners or tiny 2px micro-radii */
+  --radius-none: 0px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-full: 9999px;
+
+  --shadow-glow-green: 0 0 25px rgba(57, 255, 136, 0.25);
+  --shadow-glow-cyan: 0 0 25px rgba(56, 217, 255, 0.25);
+  --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}

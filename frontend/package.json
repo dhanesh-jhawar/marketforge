@@ -1,0 +1,30 @@
+{
+  "name": "@marketforge/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@marketforge/shared": "*",
+    "@react-three/drei": "^9.121.5",
+    "@react-three/fiber": "^8.18.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.4.7",
+    "gsap": "^3.12.7",
+    "highcharts": "^12.1.2",
+    "highcharts-react-official": "^3.2.2",
+    "lenis": "^1.1.20",
+    "lucide-react": "^0.475.0",
+    "next": "^14.2.24",
+    "ogl": "^1.0.11",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.15.1",
+    "three": "^0.173.0"
+  }
+}

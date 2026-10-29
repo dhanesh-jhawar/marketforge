@@ -1,0 +1,32 @@
+/* MarketForge styling overrides for React Bits components */
+
+.gradient-ascii-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xs);
+}
+
+.crystalized-ball {
+  border-radius: var(--radius-xs);
+}
+
+.circular-carousel {
+  --cc-fade: #050B09;
+  --cc-radius: 4px;
+}
+
+.circular-carousel__caption {
+  font-family: var(--font-mono);
+  color: #DDFBEA;
+}
+
+.circular-carousel__title {
+  color: #39FF88;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.circular-carousel__subtitle {
+  color: #94B8A3;
+}

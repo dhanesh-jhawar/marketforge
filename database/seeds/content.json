@@ -1,0 +1,155 @@
+{
+  "onboardingQuestions": [
+    {
+      "id": "experience",
+      "prompt": "How would you describe your stock-market experience?",
+      "type": "single",
+      "options": [
+        { "value": "none", "label": "Never invested", "weight": { "experience": 0 } },
+        { "value": "some", "label": "Bought a few stocks / mutual funds", "weight": { "experience": 1 } },
+        { "value": "active", "label": "I trade or invest regularly", "weight": { "experience": 2 } }
+      ]
+    },
+    {
+      "id": "drawdown",
+      "prompt": "Your portfolio falls 15% in a month. What do you do?",
+      "type": "single",
+      "options": [
+        { "value": "sell", "label": "Sell everything", "weight": { "risk": 0 } },
+        { "value": "hold", "label": "Hold and wait", "weight": { "risk": 1 } },
+        { "value": "buy", "label": "Buy more", "weight": { "risk": 2 } }
+      ]
+    },
+    {
+      "id": "goals",
+      "prompt": "What do you want to learn?",
+      "type": "multi",
+      "options": [
+        { "value": "basics", "label": "How the market works" },
+        { "value": "long_term", "label": "Long-term investing" },
+        { "value": "trading", "label": "Short-term trading" },
+        { "value": "risk", "label": "Managing risk" },
+        { "value": "analysis", "label": "Analysing companies" }
+      ]
+    },
+    {
+      "id": "quiz_circuit",
+      "prompt": "What is an 'upper circuit' on NSE?",
+      "type": "single",
+      "skillArea": "market_basics",
+      "options": [
+        { "value": "a", "label": "Max price a stock may rise to in a day", "correct": true },
+        { "value": "b", "label": "A type of order" },
+        { "value": "c", "label": "The opening price" }
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": "les-market-basics-1",
+      "slug": "how-the-indian-stock-market-works",
+      "title": "How the Indian Stock Market Works",
+      "summary": "Exchanges, SEBI, brokers, depositories and settlement in plain language.",
+      "skillArea": "market_basics",
+      "difficulty": 1,
+      "estimatedMinutes": 8,
+      "prerequisites": [],
+      "quizId": "quiz-market-basics-1",
+      "published": true,
+      "blocks": [
+        { "type": "text", "data": { "md": "India has two major stock exchanges: **NSE** and **BSE**, regulated by **SEBI**." } },
+        { "type": "callout", "data": { "tone": "info", "md": "Trades settle on a T+1 basis in India." } }
+      ]
+    },
+    {
+      "id": "les-order-types-1",
+      "slug": "market-vs-limit-orders",
+      "title": "Market vs Limit Orders",
+      "summary": "When to use each order type and what slippage means.",
+      "skillArea": "order_types",
+      "difficulty": 1,
+      "estimatedMinutes": 6,
+      "prerequisites": ["les-market-basics-1"],
+      "quizId": null,
+      "published": true,
+      "blocks": [{ "type": "text", "data": { "md": "A **market order** executes immediately at the best available price." } }]
+    },
+    {
+      "id": "les-risk-1",
+      "slug": "position-sizing-and-concentration",
+      "title": "Position Sizing & Concentration Risk",
+      "summary": "Why putting 60% of your money in one stock is dangerous.",
+      "skillArea": "risk_management",
+      "difficulty": 2,
+      "estimatedMinutes": 10,
+      "prerequisites": ["les-order-types-1"],
+      "quizId": null,
+      "published": true,
+      "blocks": [{ "type": "text", "data": { "md": "Position size determines how much one bad stock can hurt you." } }]
+    }
+  ],
+  "quizzes": [
+    {
+      "id": "quiz-market-basics-1",
+      "lessonId": "les-market-basics-1",
+      "title": "Market Basics Check",
+      "passPct": 60,
+      "questions": [
+        {
+          "id": "q1",
+          "prompt": "Who regulates the Indian securities market?",
+          "type": "single",
+          "options": ["RBI", "SEBI", "NSE", "Ministry of Finance"],
+          "answer": 1,
+          "explanation": "SEBI (Securities and Exchange Board of India) is the market regulator.",
+          "skillArea": "market_basics"
+        },
+        {
+          "id": "q2",
+          "prompt": "What is the equity settlement cycle in India?",
+          "type": "single",
+          "options": ["T+0", "T+1", "T+2", "T+3"],
+          "answer": 1,
+          "explanation": "India moved to T+1 settlement for equities.",
+          "skillArea": "market_basics"
+        }
+      ]
+    }
+  ],
+  "glossary": [
+    { "id": "ltp", "term": "LTP", "definition": "Last Traded Price — the price at which the most recent trade happened.", "category": "basics", "related": ["bid", "ask"] },
+    { "id": "cnc", "term": "CNC", "definition": "Cash and Carry — delivery-based product; shares are held in your demat account.", "category": "orders", "related": ["mis"] },
+    { "id": "mis", "term": "MIS", "definition": "Margin Intraday Square-off — positions must be closed the same day.", "category": "orders", "related": ["cnc"] },
+    { "id": "volatility", "term": "Volatility", "definition": "How much a price moves around its average. Higher volatility = larger swings.", "category": "risk", "related": [] },
+    { "id": "circuit", "term": "Circuit Limit", "definition": "The maximum % a stock can move in a session before trading is paused.", "category": "basics", "related": [] }
+  ],
+  "scenarios": [
+    {
+      "id": "scn-covid-crash",
+      "title": "The COVID-19 Crash (2020)",
+      "description": "What if you invested just before the March 2020 crash and held for a year?",
+      "symbol": null,
+      "benchmark": "NIFTY50",
+      "startDate": "2020-02-14",
+      "endDate": "2021-02-12",
+      "eventContext": "Global pandemic sell-off and V-shaped recovery",
+      "params": { "amount": 100000, "allowSymbolChoice": true }
+    },
+    {
+      "id": "scn-sip-vs-lumpsum",
+      "title": "SIP vs Lump Sum",
+      "description": "Compare investing monthly vs all at once over 5 years.",
+      "symbol": null,
+      "benchmark": "NIFTY50",
+      "startDate": "2019-01-01",
+      "endDate": "2024-01-01",
+      "eventContext": null,
+      "params": { "amount": 600000, "sipMonthly": 10000, "allowSymbolChoice": true }
+    }
+  ],
+  "challenges": [
+    { "id": "chl-diversify-5", "title": "Diversify Across 5 Sectors", "description": "Hold stocks from at least 5 different sectors.", "type": "DIVERSIFY", "criteria": { "minSectors": 5 }, "rewardXp": 200 },
+    { "id": "chl-no-violation-10", "title": "Risk Discipline", "description": "Place 10 orders without triggering a warning rule.", "type": "RISK_DISCIPLINE", "criteria": { "ordersWithoutWarning": 10 }, "rewardXp": 300 },
+    { "id": "chl-quiz-streak-3", "title": "Quiz Streak", "description": "Pass 3 quizzes in a row.", "type": "QUIZ_STREAK", "criteria": { "streak": 3 }, "rewardXp": 150 }
+  ]
+}
