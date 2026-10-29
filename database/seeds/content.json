@@ -49,7 +49,7 @@
       "id": "les-market-basics-1",
       "slug": "how-the-indian-stock-market-works",
       "title": "How the Indian Stock Market Works",
-      "summary": "Exchanges, SEBI, brokers, depositories and settlement in plain language.",
+      "summary": "Exchanges (NSE/BSE), SEBI, depositories (NSDL/CDSL), and T+1 settlement explained in plain language.",
       "skillArea": "market_basics",
       "difficulty": 1,
       "estimatedMinutes": 8,
@@ -57,71 +57,462 @@
       "quizId": "quiz-market-basics-1",
       "published": true,
       "blocks": [
-        { "type": "text", "data": { "md": "India has two major stock exchanges: **NSE** and **BSE**, regulated by **SEBI**." } },
-        { "type": "callout", "data": { "tone": "info", "md": "Trades settle on a T+1 basis in India." } }
+        { "type": "text", "data": { "md": "India's secondary stock market is anchored by two primary exchanges: the **National Stock Exchange (NSE)**, established in 1992, and the **Bombay Stock Exchange (BSE)**, established in 1875. Both exchanges are stringently regulated by the **Securities and Exchange Board of India (SEBI)** to ensure investor protection and market integrity." } },
+        { "type": "callout", "data": { "tone": "info", "md": "The Ecosystem Quartet: Investors trade through registered **Stock Brokers** (e.g. Zerodha, Groww, AngelOne). Electronic shares are securely custodied by **Depositories** (NSDL or CDSL) in your **Demat account**, while payments flow through your linked bank account." } },
+        { "type": "text", "data": { "md": "When you execute a trade in India, ownership does not change hands over physical certificates. The **Clearing Corporation** (such as NSE Clearing Ltd - NCL) acts as the central counterparty, guaranteeing the settlement of every trade even if a buyer or seller defaults." } },
+        { "type": "callout", "data": { "tone": "success", "md": "Settlement Cycle: India pioneered the rapid **T+1 Settlement Cycle** (Trade Date + 1 Business Day). If you purchase shares on Monday at 11:00 AM, the actual delivery arrives in your Demat account by Tuesday evening." } }
       ]
     },
     {
       "id": "les-order-types-1",
       "slug": "market-vs-limit-orders",
-      "title": "Market vs Limit Orders",
-      "summary": "When to use each order type and what slippage means.",
+      "title": "Market vs Limit vs Stop-Loss Orders",
+      "summary": "Understanding execution mechanics, bid-ask spread, slippage, and price-time priority.",
       "skillArea": "order_types",
       "difficulty": 1,
-      "estimatedMinutes": 6,
+      "estimatedMinutes": 7,
       "prerequisites": ["les-market-basics-1"],
-      "quizId": null,
+      "quizId": "quiz-order-types-1",
       "published": true,
-      "blocks": [{ "type": "text", "data": { "md": "A **market order** executes immediately at the best available price." } }]
+      "blocks": [
+        { "type": "text", "data": { "md": "Choosing the correct order type determines the price you pay and whether your order fills. The exchange order book matches orders strictly based on **Price-Time Priority (FIFO)**: the best price gets priority first; if prices are tied, the earlier order fills first." } },
+        { "type": "callout", "data": { "tone": "info", "md": "Market Order: Guarantees immediate execution, but does NOT guarantee price. During volatile moments or low liquidity, you may experience **slippage**—where your fill price is worse than the Last Traded Price (LTP)." } },
+        { "type": "text", "data": { "md": "A **Limit Order** lets you specify the exact maximum price you are willing to pay (for BUY) or the minimum price you will accept (for SELL). If market quotes do not reach your limit, your order stays pending in the order book as an OPEN order." } },
+        { "type": "callout", "data": { "tone": "warning", "md": "Stop-Loss (SL-L vs SL-M): A Stop-Loss order protects capital by triggering an exit when price drops to a defined 'Trigger Price'. On NSE, SEBI replaced SL-M with SL-Limit (SL-L) in equity options to prevent disastrous price spikes during freak trades." } }
+      ]
     },
     {
       "id": "les-risk-1",
       "slug": "position-sizing-and-concentration",
-      "title": "Position Sizing & Concentration Risk",
-      "summary": "Why putting 60% of your money in one stock is dangerous.",
+      "title": "Position Sizing & Capital Preservation",
+      "summary": "Why the 1-2% risk rule, diversification, and drawdown control keep you solvent.",
       "skillArea": "risk_management",
       "difficulty": 2,
       "estimatedMinutes": 10,
       "prerequisites": ["les-order-types-1"],
-      "quizId": null,
+      "quizId": "quiz-risk-1",
       "published": true,
-      "blocks": [{ "type": "text", "data": { "md": "Position size determines how much one bad stock can hurt you." } }]
+      "blocks": [
+        { "type": "text", "data": { "md": "Amateur traders focus solely on potential profits; professional traders focus relentlessly on **downside risk**. If your portfolio loses 50%, you need a 100% gain just to break even! Capital preservation is your number one priority." } },
+        { "type": "callout", "data": { "tone": "danger", "md": "The Asymmetry of Drawdowns: A 10% loss requires an 11% gain to recover. A 20% loss requires 25%. A 50% loss requires 100%. A 90% loss requires a 900% gain! Never allow a single bad trade to wipe out months of progress." } },
+        { "type": "text", "data": { "md": "Follow the **Golden 1-2% Rule**: Never risk more than 1% to 2% of your total portfolio equity on any single trade. If you have ₹1,00,000, your maximum risk per trade should be ₹1,000 to ₹2,000." } },
+        { "type": "callout", "data": { "tone": "success", "md": "Position Size Formula: Number of Shares = (Total Capital × Risk %) ÷ (Entry Price - Stop-Loss Price). If you buy at ₹1,000 with a stop-loss at ₹950 (₹50 risk per share), and your max risk is ₹1,000, you can buy exactly 20 shares." } }
+      ]
+    },
+    {
+      "id": "les-tech-analysis-1",
+      "slug": "japanese-candlesticks-and-price-action",
+      "title": "Technical Analysis & Candlestick Anatomy",
+      "summary": "Reading OHLC bodies, recognizing Doji & Hammer reversals, and identifying key support/resistance levels.",
+      "skillArea": "technical_analysis",
+      "difficulty": 2,
+      "estimatedMinutes": 9,
+      "prerequisites": ["les-order-types-1"],
+      "quizId": "quiz-tech-analysis-1",
+      "published": true,
+      "blocks": [
+        { "type": "text", "data": { "md": "Japanese candlesticks were created in the 18th century by Japanese rice merchant Homma Munehisa. Each candle illustrates four key data points over a specific timeframe: **Open (O)**, **High (H)**, **Low (L)**, and **Close (C)**." } },
+        { "type": "callout", "data": { "tone": "info", "md": "Green vs Red Candlesticks: A Green (bullish) candle forms when Close > Open, showing buyers dominated. A Red (bearish) candle forms when Close < Open, showing sellers took control." } },
+        { "type": "text", "data": { "md": "The thick rectangular section is the **Real Body**, representing the range between Open and Close. The thin vertical lines extending above and below are the **Wicks (Shadows)**, representing the extreme Highs and Lows reached before market rejection." } },
+        { "type": "callout", "data": { "tone": "success", "md": "Key Reversal Patterns: A **Hammer** has a small upper body and a long lower wick at least twice its size, signaling aggressive buyer rejection of lower prices. A **Doji** occurs when Open and Close are virtually equal, reflecting market indecision." } }
+      ]
+    },
+    {
+      "id": "les-fundamental-analysis-1",
+      "slug": "fundamental-analysis-and-valuation",
+      "title": "Fundamental Analysis & Valuation Ratios",
+      "summary": "Analyzing company financial statements: Balance Sheets, P/E, P/B, EPS, ROE, and Free Cash Flow.",
+      "skillArea": "fundamental_analysis",
+      "difficulty": 2,
+      "estimatedMinutes": 10,
+      "prerequisites": ["les-market-basics-1"],
+      "quizId": "quiz-fundamental-analysis-1",
+      "published": true,
+      "blocks": [
+        { "type": "text", "data": { "md": "Fundamental analysis evaluates the intrinsic value of a business by examining economic indicators, industry tailwinds, and corporate financial health. Long-term stock price returns ultimately mirror corporate earnings growth." } },
+        { "type": "callout", "data": { "tone": "info", "md": "The Three Core Financial Statements: 1) **Profit & Loss (P&L)** tracks revenues and expenses over a quarter/year; 2) **Balance Sheet** provides a snapshot of Assets, Liabilities, and Equity; 3) **Cash Flow Statement** tracks actual physical cash inflows from operations, investing, and financing." } },
+        { "type": "text", "data": { "md": "Valuation Multiples: The **Price-to-Earnings (P/E) Ratio** divides the current stock price by its Earnings Per Share (EPS). A P/E of 25 means investors pay ₹25 for every ₹1 of profit the company generates." } },
+        { "type": "callout", "data": { "tone": "warning", "md": "ROE & Debt-to-Equity: **Return on Equity (ROE)** reveals how efficiently management invests shareholder capital (aim for >15%). Beware of companies with excessive Debt-to-Equity (>1.5) during periods of rising interest rates." } }
+      ]
+    },
+    {
+      "id": "les-derivatives-1",
+      "slug": "derivatives-and-options-foundations",
+      "title": "Derivatives & Options Foundations",
+      "summary": "Understanding Futures, Call (CE) & Put (PE) Options, Strike Prices, and Open Interest.",
+      "skillArea": "derivatives",
+      "difficulty": 3,
+      "estimatedMinutes": 12,
+      "prerequisites": ["les-risk-1"],
+      "quizId": "quiz-derivatives-1",
+      "published": true,
+      "blocks": [
+        { "type": "text", "data": { "md": "A derivative is a financial contract whose value is derived from an underlying asset (such as NIFTY 50, BANKNIFTY, or RELIANCE). In India, equity derivatives trade on NSE's F&O segment in standardized lot sizes." } },
+        { "type": "callout", "data": { "tone": "info", "md": "Futures vs Options: A **Futures contract** is an obligation to buy or sell the underlying asset at an agreed price on expiry. An **Option contract** gives the buyer the right, but NOT the obligation, to buy (Call) or sell (Put)." } },
+        { "type": "text", "data": { "md": "Call (CE) vs Put (PE): Buy a **Call Option (CE)** when you expect the underlying stock/index to rally. Buy a **Put Option (PE)** when you expect prices to drop. Option buyers pay a non-refundable **Premium**, which represents their maximum possible loss." } },
+        { "type": "callout", "data": { "tone": "danger", "md": "Option Sellers (Writers): Option buyers have limited loss (the premium) and unlimited upside. Option sellers collect premium upfront but face potentially unlimited losses if the market moves violently against them!" } }
+      ]
+    },
+    {
+      "id": "les-psychology-1",
+      "slug": "trading-psychology-and-discipline",
+      "title": "Trading Psychology & Emotional Discipline",
+      "summary": "Overcoming FOMO, revenge trading, loss aversion, and cognitive biases with a trading journal.",
+      "skillArea": "trading_psychology",
+      "difficulty": 1,
+      "estimatedMinutes": 8,
+      "prerequisites": ["les-risk-1"],
+      "quizId": "quiz-psychology-1",
+      "published": true,
+      "blocks": [
+        { "type": "text", "data": { "md": "Market research consistently proves that 90% of active retail traders lose capital not because of flawed technical charts, but because of **psychological failures**: lack of discipline, impatience, and emotional greed." } },
+        { "type": "callout", "data": { "tone": "warning", "md": "The Deadly Deadly Sins: 1) **FOMO (Fear Of Missing Out)**: Chasing a stock after it has already rallied 10% in a session; 2) **Revenge Trading**: Doubling position size immediately after a loss to 'win back' money; 3) **Sunk Cost Fallacy**: Refusing to cut a losing trade because 'it will come back eventually'." } },
+        { "type": "text", "data": { "md": "Systematic trading demands treating virtual trading like a business. Maintain a disciplined **Trading Journal** documenting entry rationale, planned stop-loss, target price, and the emotional state when entering." } },
+        { "type": "callout", "data": { "tone": "success", "md": "The Mark Douglas Axiom: 'Accept the risk before entering the trade.' If you cannot comfortably accept losing your planned stop-loss amount in advance, your position size is too large." } }
+      ]
+    },
+    {
+      "id": "les-macro-1",
+      "slug": "macroeconomics-and-market-catalysts",
+      "title": "Macroeconomics & Market Catalysts",
+      "summary": "How RBI Repo Rates, Inflation, FII/DII institutional flows, and India VIX dictate market trends.",
+      "skillArea": "market_basics",
+      "difficulty": 2,
+      "estimatedMinutes": 9,
+      "prerequisites": ["les-market-basics-1"],
+      "quizId": "quiz-macro-1",
+      "published": true,
+      "blocks": [
+        { "type": "text", "data": { "md": "Stock prices do not move in a vacuum. Broader macroeconomic cycles set the monetary tide that lifts or sinks entire sectors. The central bank—the **Reserve Bank of India (RBI)**—dictates liquidity through the **Repo Rate**." } },
+        { "type": "callout", "data": { "tone": "info", "md": "Interest Rates vs Equity Valuations: When the RBI increases the repo rate to fight inflation, borrowing costs rise for companies and home buyers. High interest rates compress equity valuation multiples as fixed income yields become more attractive." } },
+        { "type": "text", "data": { "md": "Institutional Market Movers: In India, two mega-forces drive liquidity: **Foreign Institutional Investors (FIIs)** and **Domestic Institutional Investors (DIIs)** like LIC, SBI Mutual Fund, and monthly retail SIP flows." } },
+        { "type": "callout", "data": { "tone": "warning", "md": "India VIX (The Fear Gauge): Calculated by NSE using NIFTY option bid-ask quotes, **India VIX** measures expected annualised market volatility over the next 30 days. When VIX spikes above 20, option premiums inflate and market swings become wider." } }
+      ]
     }
   ],
   "quizzes": [
     {
       "id": "quiz-market-basics-1",
       "lessonId": "les-market-basics-1",
-      "title": "Market Basics Check",
-      "passPct": 60,
+      "title": "Market Structure & Settlement Quiz",
+      "passPct": 66,
       "questions": [
         {
-          "id": "q1",
-          "prompt": "Who regulates the Indian securities market?",
+          "id": "q1_1",
+          "prompt": "Who is the primary statutory regulator of the securities market in India?",
           "type": "single",
-          "options": ["RBI", "SEBI", "NSE", "Ministry of Finance"],
+          "options": ["Reserve Bank of India (RBI)", "Securities and Exchange Board of India (SEBI)", "Ministry of Corporate Affairs", "NITI Aayog"],
           "answer": 1,
-          "explanation": "SEBI (Securities and Exchange Board of India) is the market regulator.",
+          "explanation": "SEBI (Securities and Exchange Board of India) is the statutory regulator empowered by parliament to protect investor interests and regulate securities markets.",
           "skillArea": "market_basics"
         },
         {
-          "id": "q2",
-          "prompt": "What is the equity settlement cycle in India?",
+          "id": "q1_2",
+          "prompt": "What is the standard equity trade settlement cycle currently operating in India?",
           "type": "single",
-          "options": ["T+0", "T+1", "T+2", "T+3"],
+          "options": ["T+0 (Same day)", "T+1 (Trade date + 1 business day)", "T+2 (Trade date + 2 business days)", "T+3 (Trade date + 3 business days)"],
           "answer": 1,
-          "explanation": "India moved to T+1 settlement for equities.",
+          "explanation": "India completed its transition to the T+1 settlement cycle for all listed equities in January 2023.",
+          "skillArea": "market_basics"
+        },
+        {
+          "id": "q1_3",
+          "prompt": "Where are your purchased equity shares stored electronically?",
+          "type": "single",
+          "options": ["On the stock exchange floor", "Inside the broker's personal bank vault", "In your Demat account at a Depository (NSDL or CDSL)", "In physical paper certificates at home"],
+          "answer": 2,
+          "explanation": "Shares in India are dematerialized and held securely in your Demat account maintained with NSDL or CDSL.",
+          "skillArea": "market_basics"
+        }
+      ]
+    },
+    {
+      "id": "quiz-order-types-1",
+      "lessonId": "les-order-types-1",
+      "title": "Order Types & Execution Mechanics Quiz",
+      "passPct": 66,
+      "questions": [
+        {
+          "id": "q2_1",
+          "prompt": "What is the primary risk of using a Market Order during volatile trading hours?",
+          "type": "single",
+          "options": ["The order will automatically be cancelled by SEBI", "Slippage: your fill price may be significantly worse than expected", "You will be charged a penalty by the exchange", "Your shares cannot be held overnight"],
+          "answer": 1,
+          "explanation": "A market order prioritizes instant execution over price, meaning in fast-moving markets your order sweeps the book at unfavorable prices (slippage).",
+          "skillArea": "order_types"
+        },
+        {
+          "id": "q2_2",
+          "prompt": "If you submit a BUY Limit Order at ₹1,500 when the stock is trading at ₹1,520, what happens?",
+          "type": "single",
+          "options": ["It executes immediately at ₹1,520", "It is rejected because price is too low", "It rests as an OPEN order in the order book until market price drops to ₹1,500 or below", "It automatically changes into a market order"],
+          "answer": 2,
+          "explanation": "A buy limit specifies the MAXIMUM price you will pay. If the current price is ₹1,520, it stays open in the order book waiting for matching sellers at ₹1,500.",
+          "skillArea": "order_types"
+        },
+        {
+          "id": "q2_3",
+          "prompt": "What principle governs the matching engine of modern stock exchanges?",
+          "type": "single",
+          "options": ["Random Lottery Selection", "Price-Time Priority (FIFO)", "Highest Trader Net Worth Priority", "Alphabetical Order Priority"],
+          "answer": 1,
+          "explanation": "Exchanges match orders by Price-Time Priority: best price first, and earlier timestamps first.",
+          "skillArea": "order_types"
+        }
+      ]
+    },
+    {
+      "id": "quiz-risk-1",
+      "lessonId": "les-risk-1",
+      "title": "Risk Management & Position Sizing Quiz",
+      "passPct": 66,
+      "questions": [
+        {
+          "id": "q3_1",
+          "prompt": "If your portfolio suffers a 50% drawdown, what percentage gain is needed to return to breakeven?",
+          "type": "single",
+          "options": ["50% gain", "75% gain", "100% gain", "150% gain"],
+          "answer": 2,
+          "explanation": "If ₹1,00,000 drops 50% to ₹50,000, you must double your money (+100% on ₹50,000) just to reach your starting ₹1,00,000.",
+          "skillArea": "risk_management"
+        },
+        {
+          "id": "q3_2",
+          "prompt": "According to the disciplined 2% Risk Rule, on a ₹1,00,000 portfolio, what is the maximum permissible loss on one trade?",
+          "type": "single",
+          "options": ["₹200", "₹2,000", "₹10,000", "₹20,000"],
+          "answer": 1,
+          "explanation": "2% of ₹1,00,000 is exactly ₹2,000. Your stop-loss multiplied by share quantity must never exceed this amount.",
+          "skillArea": "risk_management"
+        },
+        {
+          "id": "q3_3",
+          "prompt": "Why is putting 70% of your portfolio into a single stock considered dangerous?",
+          "type": "single",
+          "options": ["SEBI will freeze your bank account", "It creates severe concentration risk: negative company-specific news can cripple your entire portfolio", "Exchanges charge higher brokerage on large single positions", "The stock automatically enters an upper circuit"],
+          "answer": 1,
+          "explanation": "High concentration risk means one unexpected negative event (earnings miss, regulatory audit, fraud) can wipe out a catastrophic portion of your wealth.",
+          "skillArea": "risk_management"
+        }
+      ]
+    },
+    {
+      "id": "quiz-tech-analysis-1",
+      "lessonId": "les-tech-analysis-1",
+      "title": "Technical Candlesticks & Price Action Quiz",
+      "passPct": 66,
+      "questions": [
+        {
+          "id": "q4_1",
+          "prompt": "In a standard Japanese candlestick, what does a long lower shadow (wick) indicate?",
+          "type": "single",
+          "options": ["Sellers remained in complete control at the close", "Sellers drove the price down, but buyers stepped in aggressively and rejected lower prices", "No trades occurred during the session", "The stock reached its upper circuit limit"],
+          "answer": 1,
+          "explanation": "A long lower wick shows strong buying pressure: bears pushed prices down, but bulls aggressively absorbed the supply and drove the price back up.",
+          "skillArea": "technical_analysis"
+        },
+        {
+          "id": "q4_2",
+          "prompt": "What does a 'Doji' candlestick signify?",
+          "type": "single",
+          "options": ["Strong continuation of the bullish trend", "Market indecision where the Open and Close prices are nearly identical", "A massive sell-off triggered by institutional FII selling", "A company announcement regarding stock split"],
+          "answer": 1,
+          "explanation": "A Doji represents a tug-of-war where neither buyers nor sellers gained the upper hand, leading to an open and close at virtually the same level.",
+          "skillArea": "technical_analysis"
+        },
+        {
+          "id": "q4_3",
+          "prompt": "What is a 'Support' level in technical analysis?",
+          "type": "single",
+          "options": ["The price ceiling where selling pressure reliably halts upward movement", "A price floor where buying interest is strong enough to overcome selling pressure", "The minimum margin required by your stock broker", "The level where a company's dividend yield reaches zero"],
+          "answer": 1,
+          "explanation": "Support is a price level where demand (buying power) is sufficiently strong to prevent the price from falling further.",
+          "skillArea": "technical_analysis"
+        }
+      ]
+    },
+    {
+      "id": "quiz-fundamental-analysis-1",
+      "lessonId": "les-fundamental-analysis-1",
+      "title": "Fundamental Valuation & Financials Quiz",
+      "passPct": 66,
+      "questions": [
+        {
+          "id": "q5_1",
+          "prompt": "If Company X trades at ₹500 and its annual Earnings Per Share (EPS) is ₹25, what is its P/E ratio?",
+          "type": "single",
+          "options": ["10", "20", "25", "125"],
+          "answer": 1,
+          "explanation": "P/E Ratio = Market Price / EPS = 500 / 25 = 20.",
+          "skillArea": "fundamental_analysis"
+        },
+        {
+          "id": "q5_2",
+          "prompt": "Which financial statement provides a snapshot of a company's assets, liabilities, and shareholder equity at a specific point in time?",
+          "type": "single",
+          "options": ["Cash Flow Statement", "Profit & Loss (Income) Statement", "Balance Sheet", "Annual Auditor Opinion Letter"],
+          "answer": 2,
+          "explanation": "The Balance Sheet reflects the fundamental accounting identity: Assets = Liabilities + Shareholders' Equity on a specific date.",
+          "skillArea": "fundamental_analysis"
+        },
+        {
+          "id": "q5_3",
+          "prompt": "What does Return on Equity (ROE) measure?",
+          "type": "single",
+          "options": ["The total dividend yield paid in cash to investors", "How effectively management generates profits from the money shareholders invested", "The percentage of shares owned by institutional promoters", "The daily volatility of the stock relative to the Nifty 50"],
+          "answer": 1,
+          "explanation": "ROE (Net Income / Shareholders' Equity) is the primary gauge of managerial efficiency in converting equity capital into net earnings.",
+          "skillArea": "fundamental_analysis"
+        }
+      ]
+    },
+    {
+      "id": "quiz-derivatives-1",
+      "lessonId": "les-derivatives-1",
+      "title": "Derivatives & Options Foundations Quiz",
+      "passPct": 66,
+      "questions": [
+        {
+          "id": "q6_1",
+          "prompt": "What gives an investor the right, but NOT the obligation, to BUY an underlying stock at a set strike price?",
+          "type": "single",
+          "options": ["A Futures Contract", "A Call Option (CE)", "A Put Option (PE)", "A Delivery Equity Order"],
+          "answer": 1,
+          "explanation": "A Call Option gives the buyer the right to buy the underlying security at the strike price before or on expiry.",
+          "skillArea": "derivatives"
+        },
+        {
+          "id": "q6_2",
+          "prompt": "What is the maximum risk an Option Buyer faces on a long Call or Put?",
+          "type": "single",
+          "options": ["Unlimited loss", "The full market value of the underlying stock", "Only the initial premium paid to purchase the option contract", "Twice the strike price"],
+          "answer": 2,
+          "explanation": "An option buyer can only lose up to 100% of the premium paid for the option contract. Upside is theoretically unlimited.",
+          "skillArea": "derivatives"
+        },
+        {
+          "id": "q6_3",
+          "prompt": "What does 'Open Interest (OI)' represent in the NSE derivatives market?",
+          "type": "single",
+          "options": ["The total number of shares traded in the cash market today", "The total number of outstanding derivative contracts that have not yet been settled or closed", "The interest rate charged by NBFCs for margin trading", "The dividend yield percentage on an option strike"],
+          "answer": 1,
+          "explanation": "Open Interest measures the total number of active, open contracts held by market participants at the end of the trading session.",
+          "skillArea": "derivatives"
+        }
+      ]
+    },
+    {
+      "id": "quiz-psychology-1",
+      "lessonId": "les-psychology-1",
+      "title": "Trading Psychology & Emotional Control Quiz",
+      "passPct": 66,
+      "questions": [
+        {
+          "id": "q7_1",
+          "prompt": "What is 'Revenge Trading'?",
+          "type": "single",
+          "options": ["Shorting a competitor's stock when your company reports bad earnings", "Emotionally taking larger, impulsive trades immediately after a loss to try to recoup capital", "Reporting market manipulation to SEBI", "Setting automatic take-profit targets"],
+          "answer": 1,
+          "explanation": "Revenge trading happens when anger and bruised ego take over, leading to high-leverage irrational trades that frequently compound losses.",
+          "skillArea": "trading_psychology"
+        },
+        {
+          "id": "q7_2",
+          "prompt": "Why do disciplined traders maintain a Trading Journal?",
+          "type": "single",
+          "options": ["Because SEBI requires physical handwritten journals by law", "To systematically review past decisions, identify recurring behavioral errors, and verify strategy edge", "To submit to income tax authorities for tax exemption", "To calculate brokerage fees manually"],
+          "answer": 1,
+          "explanation": "A trading journal provides an objective mirror of your performance, separating emotional mistakes from statistical strategy execution.",
+          "skillArea": "trading_psychology"
+        },
+        {
+          "id": "q7_3",
+          "prompt": "What cognitive bias causes traders to hold onto large losing positions while selling winners too early?",
+          "type": "single",
+          "options": ["Disposition Effect / Loss Aversion", "Confirmation Bias", "Anchoring Bias", "Hindsight Bias"],
+          "answer": 0,
+          "explanation": "The Disposition Effect (rooted in Kahneman & Tversky's Prospect Theory) describes our psychological tendency to quickly lock in small gains while irrationally refusing to accept and cut losses.",
+          "skillArea": "trading_psychology"
+        }
+      ]
+    },
+    {
+      "id": "quiz-macro-1",
+      "lessonId": "les-macro-1",
+      "title": "Macroeconomics & Market Catalysts Quiz",
+      "passPct": 66,
+      "questions": [
+        {
+          "id": "q8_1",
+          "prompt": "When the Reserve Bank of India (RBI) hikes the repo rate, what generally happens to market borrowing costs?",
+          "type": "single",
+          "options": ["Borrowing costs decrease for businesses and consumers", "Borrowing costs increase across the economy as commercial banks raise lending rates", "Commercial banks stop lending money entirely", "The stock market is completely unaffected"],
+          "answer": 1,
+          "explanation": "A higher repo rate increases the cost of capital for commercial banks, which pass on higher rates to businesses and home-loan borrowers, dampening excessive inflation.",
+          "skillArea": "market_basics"
+        },
+        {
+          "id": "q8_2",
+          "prompt": "What does a high India VIX (e.g. above 22) indicate to equity market participants?",
+          "type": "single",
+          "options": ["Market participants anticipate calm, low-volatility trading", "Market participants anticipate sharp price swings and elevated near-term uncertainty", "Foreign investors have completely exited the Indian market", "The trading session is automatically halted by NSE"],
+          "answer": 1,
+          "explanation": "India VIX is the volatility index. Elevated readings reflect fear, increased hedging activity, and expectations of sharp directional swings.",
+          "skillArea": "market_basics"
+        },
+        {
+          "id": "q8_3",
+          "prompt": "Which institutional group in India represents domestic mutual funds, insurance companies (LIC), and pension funds?",
+          "type": "single",
+          "options": ["FII (Foreign Institutional Investors)", "DII (Domestic Institutional Investors)", "HNI (High Net-worth Individuals)", "AIF (Alternative Investment Funds)"],
+          "answer": 1,
+          "explanation": "DII (Domestic Institutional Investors) channel domestic Indian savings (especially monthly SIPs) directly into equity and debt markets.",
           "skillArea": "market_basics"
         }
       ]
     }
   ],
   "glossary": [
-    { "id": "ltp", "term": "LTP", "definition": "Last Traded Price — the price at which the most recent trade happened.", "category": "basics", "related": ["bid", "ask"] },
-    { "id": "cnc", "term": "CNC", "definition": "Cash and Carry — delivery-based product; shares are held in your demat account.", "category": "orders", "related": ["mis"] },
-    { "id": "mis", "term": "MIS", "definition": "Margin Intraday Square-off — positions must be closed the same day.", "category": "orders", "related": ["cnc"] },
-    { "id": "volatility", "term": "Volatility", "definition": "How much a price moves around its average. Higher volatility = larger swings.", "category": "risk", "related": [] },
-    { "id": "circuit", "term": "Circuit Limit", "definition": "The maximum % a stock can move in a session before trading is paused.", "category": "basics", "related": [] }
+    { "id": "ltp", "term": "LTP", "category": "TRADING & ORDERS", "definition": "Last Traded Price — the exact price at which the most recent executed trade took place on the stock exchange.", "example": "If Reliance executes a trade at ₹2,742.50, that figure becomes the current LTP." },
+    { "id": "cnc", "term": "CNC", "category": "TRADING & ORDERS", "definition": "Cash and Carry — delivery-based equity product where you pay 100% upfront and shares are transferred directly into your Demat account for multi-day or multi-year holding.", "example": "Used for long-term equity investing with zero leverage risk." },
+    { "id": "mis", "term": "MIS", "category": "TRADING & ORDERS", "definition": "Margin Intraday Square-off — an intraday trading product where positions are automatically squared off before the market closes (3:20 PM) by your broker.", "example": "Allows higher leverage for day traders, but cannot be held overnight." },
+    { "id": "volatility", "term": "Volatility", "category": "DERIVATIVES & RISK", "definition": "The statistical measure of dispersion of returns for a given security or index. Higher volatility implies larger, faster price swings in either direction.", "example": "Small-cap stocks generally have higher annualized volatility than NIFTY 50 blue chips." },
+    { "id": "circuit", "term": "Circuit Limit", "category": "REGULATORY & ACTIONS", "definition": "Price bands defined by SEBI/NSE (typically 2%, 5%, 10%, or 20%) that cap the maximum percentage a stock can rise (Upper Circuit) or fall (Lower Circuit) in a single session.", "example": "If a stock hits its lower circuit, trading is halted or orders queue without matching buyers." },
+    { "id": "stt", "term": "STT (Securities Transaction Tax)", "category": "REGULATORY & ACTIONS", "definition": "A direct tax levied by the Government of India on every purchase and sale of equities and derivatives traded on recognized domestic stock exchanges.", "example": "Charged at 0.1% on delivery equity turnover and 0.025% on equity intraday sell-side." },
+    { "id": "demat", "term": "Demat Account", "category": "MARKET STRUCTURE", "definition": "Dematerialized account used to hold financial securities (shares, bonds, ETFs, mutual funds) in electronic book-entry format with central depositories.", "example": "Maintained by NSDL or CDSL through your chosen depository participant broker." },
+    { "id": "depositories", "term": "NSDL & CDSL", "category": "MARKET STRUCTURE", "definition": "The two central depositories licensed by SEBI in India. National Securities Depository Limited (NSDL) and Central Depository Services Limited (CDSL) act as the electronic custodians of all demat shares.", "example": "Your holdings are registered with CDSL or NSDL, meaning your shares remain safe even if your stock broker shuts down." },
+    { "id": "t1_settlement", "term": "T+1 Settlement", "category": "MARKET STRUCTURE", "definition": "The settlement timeline where equity trades, funds, and share deliveries are finalized within one business day following the trade execution date.", "example": "Shares purchased on Wednesday are delivered to your Demat account on Thursday evening." },
+    { "id": "market_order", "term": "Market Order", "category": "TRADING & ORDERS", "definition": "An order to buy or sell a security immediately at the best available current market price in the exchange order book.", "example": "Guarantees immediate execution, but may incur slippage if volume is large." },
+    { "id": "limit_order", "term": "Limit Order", "category": "TRADING & ORDERS", "definition": "An order to buy a security at or below a specified price, or sell at or above a specified price. Guarantees price control but does not guarantee execution.", "example": "Setting a buy limit at ₹1,800 on Infosys when the market is at ₹1,825." },
+    { "id": "stop_loss", "term": "Stop-Loss (SL-L / SL-M)", "category": "TRADING & ORDERS", "definition": "A risk-mitigation order designed to limit an investor's loss on a position by triggering an automatic exit when price breaches a predefined trigger threshold.", "example": "Buying at ₹500 and placing a Stop-Loss Limit at ₹485 to limit maximum risk to ₹15 per share." },
+    { "id": "gtt", "term": "GTT (Good Till Triggered)", "category": "TRADING & ORDERS", "definition": "A feature allowing traders to set persistent buy or sell triggers with stop-loss and target prices that remain active for up to one year until triggered.", "example": "Useful for placing buy orders at support zones without watching screens all day." },
+    { "id": "amo", "term": "AMO (After Market Order)", "category": "TRADING & ORDERS", "definition": "An order placed outside normal exchange trading hours (between 3:45 PM and 8:59 AM) that is queued for placement at the market open.", "example": "Enables working professionals to schedule trades in the evening." },
+    { "id": "bid_ask_spread", "term": "Bid-Ask Spread", "category": "TRADING & ORDERS", "definition": "The price difference between the highest price a buyer is willing to pay (Bid) and the lowest price a seller is willing to accept (Ask).", "example": "A narrow spread (₹0.05) indicates high liquidity; a wide spread indicates illiquid trading." },
+    { "id": "market_depth", "term": "Market Depth (L2)", "category": "TRADING & ORDERS", "definition": "A real-time display of the best 5 or 20 bid and ask orders showing pending order quantities at varying price ticks in the exchange matching engine.", "example": "Level 2 market depth shows institutional buy/sell walls." },
+    { "id": "slippage", "term": "Slippage", "category": "TRADING & ORDERS", "definition": "The difference between the expected execution price of an order and the actual price at which the trade executes, caused by market velocity or low liquidity.", "example": "Submitting a market order at ₹100 but getting filled at ₹100.80 due to fast-moving quotes." },
+    { "id": "market_cap", "term": "Market Capitalization", "category": "FUNDAMENTALS", "definition": "The total market value of a publicly traded company's outstanding equity shares, calculated by multiplying current share price by total share count.", "example": "Reliance Industries with a market cap exceeding ₹18 Lakh Crore (Mega-Cap)." },
+    { "id": "pe_ratio", "term": "P/E Ratio (Price-to-Earnings)", "category": "FUNDAMENTALS", "definition": "Valuation ratio calculating the relationship between a company's stock price and its earnings per share (EPS). Indicates how much investors pay per ₹1 of annual profit.", "example": "A P/E of 20 means you pay ₹20 for every ₹1 of company net profit." },
+    { "id": "pb_ratio", "term": "P/B Ratio (Price-to-Book)", "category": "FUNDAMENTALS", "definition": "Compares a company's market value to its book value (net asset value). Especially critical for evaluating banks and capital-heavy financial institutions.", "example": "HDFC Bank trading at 2.6x Price-to-Book value." },
+    { "id": "eps", "term": "EPS (Earnings Per Share)", "category": "FUNDAMENTALS", "definition": "The portion of a company's net profit allocated to each individual outstanding share of common stock.", "example": "If a company earns ₹1,000 Cr with 100 Cr shares, its EPS is ₹10.00." },
+    { "id": "dividend_yield", "term": "Dividend Yield", "category": "FUNDAMENTALS", "definition": "The financial ratio showing how much a company pays out in annual dividends relative to its current stock price, expressed as a percentage.", "example": "A stock priced at ₹400 paying ₹16 in annual dividends has a 4.0% dividend yield." },
+    { "id": "roe", "term": "ROE (Return on Equity)", "category": "FUNDAMENTALS", "definition": "Profitability metric calculated by dividing net profit by shareholders' equity. Measures how effectively management deploys shareholder capital to generate profits.", "example": "TCS consistently generating an ROE exceeding 45%." },
+    { "id": "free_cash_flow", "term": "Free Cash Flow (FCF)", "category": "FUNDAMENTALS", "definition": "The cash a company generates through operations after accounting for capital expenditures (capex) required to maintain and expand its asset base.", "example": "FCF can be used to pay dividends, repurchase shares, or acquire competitors without taking on debt." },
+    { "id": "candlestick", "term": "Japanese Candlestick", "category": "TECHNICALS", "definition": "A visual charting tool displaying four key prices over a selected timeframe: Open, High, Low, and Close (OHLC).", "example": "Green candles depict bullish buying; red candles depict bearish selling." },
+    { "id": "support_resistance", "term": "Support & Resistance", "category": "TECHNICALS", "definition": "Key price horizontal zones on a chart where buying pressure historically stops a decline (Support), or selling pressure stops an upward advance (Resistance).", "example": "NIFTY finding historical buying support around the 24,000 psychological level." },
+    { "id": "moving_averages", "term": "Moving Averages (SMA / EMA)", "category": "TECHNICALS", "definition": "Trend-following indicators that smooth out volatile price data by calculating a constantly updated average price over a specific number of periods (e.g. 50-day, 200-day).", "example": "A stock trading comfortably above its 200-day EMA indicates an established long-term uptrend." },
+    { "id": "rsi", "term": "RSI (Relative Strength Index)", "category": "TECHNICALS", "definition": "A momentum oscillator measuring the speed and change of price movements on a scale from 0 to 100. Traditional levels consider above 70 as Overbought and below 30 as Oversold.", "example": "An RSI reading of 25 may suggest selling momentum is exhausted in the short term." },
+    { "id": "macd", "term": "MACD", "category": "TECHNICALS", "definition": "Moving Average Convergence Divergence — a trend-following momentum indicator displaying the relationship between two exponential moving averages (12 EMA and 26 EMA).", "example": "A bullish signal line crossover occurs when the MACD line crosses above the signal line." },
+    { "id": "bull_bear", "term": "Bull & Bear Market", "category": "MARKET STRUCTURE", "definition": "A Bull Market is characterized by prolonged rising asset prices and investor optimism. A Bear Market represents a sustained decline of 20% or more from recent peaks accompanied by fear.", "example": "The 2020 post-pandemic rally was one of the strongest bull runs in Indian history." },
+    { "id": "futures", "term": "Futures Contract", "category": "DERIVATIVES & RISK", "definition": "A standardized legal agreement traded on an exchange to buy or sell an asset at a predetermined price at a specified future date in standardized lot sizes.", "example": "NIFTY Futures allow institutional players to hedge large equity portfolios against near-term drops." },
+    { "id": "call_option", "term": "Call Option (CE)", "category": "DERIVATIVES & RISK", "definition": "A financial derivative contract giving the buyer the right, but not the obligation, to purchase a stock/index at the strike price on or before expiry.", "example": "Buying a NIFTY 24,500 Call Option when expecting a bullish breakout." },
+    { "id": "put_option", "term": "Put Option (PE)", "category": "DERIVATIVES & RISK", "definition": "A derivative contract giving the buyer the right to sell an underlying stock/index at the specified strike price. Gains value when prices fall.", "example": "Purchasing Put options to insure an equity portfolio against a market crash." },
+    { "id": "strike_price", "term": "Strike Price", "category": "DERIVATIVES & RISK", "definition": "The predetermined set price at which an option contract owner can buy (Call) or sell (Put) the underlying security upon exercise.", "example": "If Reliance trades at ₹2,740, the ₹2,800 Call has an Out-Of-The-Money (OTM) strike price." },
+    { "id": "open_interest", "term": "Open Interest (OI)", "category": "DERIVATIVES & RISK", "definition": "The total number of open or outstanding derivative contracts (futures or options) that have not been settled or squared off in the market.", "example": "Rising price with rising Open Interest indicates strong institutional trend continuation." },
+    { "id": "hedging", "term": "Hedging", "category": "DERIVATIVES & RISK", "definition": "A risk management strategy deployed to offset potential losses in an existing investment by opening an opposing position in a related asset or derivative.", "example": "Holding ₹10 Lakhs of equities and buying index Put options to limit drawdown during budget week." },
+    { "id": "india_vix", "term": "India VIX", "category": "DERIVATIVES & RISK", "definition": "The premier volatility index computed by NSE using NIFTY option bid-ask quotes. Indicates annualized expected volatility over the next 30 calendar days.", "example": "Known as the market's 'fear gauge'; surges during elections, wars, or unexpected policy shifts." },
+    { "id": "ipo", "term": "IPO (Initial Public Offering)", "category": "REGULATORY & ACTIONS", "definition": "The process by which a private corporation offers shares to the public for the first time on primary markets to raise equity expansion capital.", "example": "Applying for shares through the UPI-ASBA mechanism on NSE." },
+    { "id": "stock_split", "term": "Stock Split", "category": "REGULATORY & ACTIONS", "definition": "A corporate action where a company increases its total number of shares by dividing existing shares (e.g. 1:2 or 1:5 split). Total market cap remains unchanged while share price drops proportionately to boost retail liquidity.", "example": "A 1:2 split turns one ₹1,000 share into two ₹500 shares." },
+    { "id": "bonus_shares", "term": "Bonus Shares", "category": "REGULATORY & ACTIONS", "definition": "Additional free shares issued by a company to its existing shareholders out of accumulated retained earnings or reserves, in proportion to their current holdings.", "example": "A 1:1 bonus issue grants one free share for every share currently held." }
   ],
   "scenarios": [
     {
@@ -148,8 +539,71 @@
     }
   ],
   "challenges": [
-    { "id": "chl-diversify-5", "title": "Diversify Across 5 Sectors", "description": "Hold stocks from at least 5 different sectors.", "type": "DIVERSIFY", "criteria": { "minSectors": 5 }, "rewardXp": 200 },
-    { "id": "chl-no-violation-10", "title": "Risk Discipline", "description": "Place 10 orders without triggering a warning rule.", "type": "RISK_DISCIPLINE", "criteria": { "ordersWithoutWarning": 10 }, "rewardXp": 300 },
-    { "id": "chl-quiz-streak-3", "title": "Quiz Streak", "description": "Pass 3 quizzes in a row.", "type": "QUIZ_STREAK", "criteria": { "streak": 3 }, "rewardXp": 150 }
+    {
+      "id": "chl-diversified-portfolio",
+      "title": "Build a Diversified Portfolio",
+      "description": "Allocate virtual capital across at least 4 distinct economic sectors (e.g., IT, Banking, Energy, FMCG) with no single stock exceeding 25%.",
+      "type": "DIVERSIFY",
+      "criteria": { "minSectors": 4, "maxSingleWeight": 25 },
+      "rewardXp": 350,
+      "difficulty": "INTERMEDIATE",
+      "badge": "Risk Architect Badge",
+      "target": "4 Distinct Sectors"
+    },
+    {
+      "id": "chl-survive-crash",
+      "title": "Survive a Market Crash Simulation",
+      "description": "Complete a What-If simulation test through a 20%+ drawdown window without panic selling.",
+      "type": "SIMULATION",
+      "criteria": { "scenario": "scn-covid-crash" },
+      "rewardXp": 500,
+      "difficulty": "HARD",
+      "badge": "Diamond Hands Trophy",
+      "target": "1 Crash Simulation Completed"
+    },
+    {
+      "id": "chl-use-limit-order",
+      "title": "Execute a Disciplined Limit Order",
+      "description": "Submit and fill an order using a disciplined LIMIT price rather than market execution to capture a favorable entry price.",
+      "type": "LIMIT_ORDER",
+      "criteria": { "orderType": "LIMIT", "minFills": 1 },
+      "rewardXp": 200,
+      "difficulty": "BEGINNER",
+      "badge": "Order Tactician Badge",
+      "target": "1 Limit Order Filled"
+    },
+    {
+      "id": "chl-control-position-size",
+      "title": "Master Position Sizing (Strict <15%)",
+      "description": "Execute 5 consecutive trades with deterministic portfolio impact strictly below 15% per position.",
+      "type": "RISK_DISCIPLINE",
+      "criteria": { "consecutiveDisciplinedTrades": 5 },
+      "rewardXp": 300,
+      "difficulty": "INTERMEDIATE",
+      "badge": "Discipline Master Badge",
+      "target": "5 Disciplined Trades"
+    },
+    {
+      "id": "chl-read-candlestick-chart",
+      "title": "Pass Technical Analysis & Candlestick Quiz",
+      "description": "Master OHLC candle bodies, wicks, Doji/Hammer reversals, and score 100% on the Technical Analysis quiz.",
+      "type": "QUIZ",
+      "criteria": { "quizId": "quiz-tech-analysis-1" },
+      "rewardXp": 250,
+      "difficulty": "BEGINNER",
+      "badge": "Chartist Novice Badge",
+      "target": "1 Technical Quiz Passed"
+    },
+    {
+      "id": "chl-complete-fno-foundations",
+      "title": "Master Derivatives & F&O Foundations",
+      "description": "Complete the F&O derivatives module and pass the Options Foundations quiz testing Calls, Puts, and Open Interest.",
+      "type": "QUIZ",
+      "criteria": { "quizId": "quiz-derivatives-1" },
+      "rewardXp": 400,
+      "difficulty": "HARD",
+      "badge": "Derivatives Specialist Badge",
+      "target": "1 F&O Quiz Passed"
+    }
   ]
 }

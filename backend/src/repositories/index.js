@@ -99,11 +99,8 @@ export async function initDataStore() {
       repos[name] = new SqliteRepository({ name, ...def }, sqliteDb);
     }
 
-    // Check if content.json seeds need to be loaded
-    const lessonCount = await repos.lessons.count();
-    if (lessonCount === 0) {
-      await seedContentData();
-    }
+    // Always sync latest content.json seeds (lessons, quizzes, glossary, challenges)
+    await seedContentData();
 
     log.info({ path: config.data.sqlitePath }, 'Data store: sqlite initialized');
   } else if (config.data.store === 'postgres') {

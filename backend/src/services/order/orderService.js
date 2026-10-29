@@ -9,13 +9,27 @@ import { eventBus } from '../../websocket/eventBus.js';
 import { nowIso, uuid, round } from '../../utils/index.js';
 import { config } from '../../config/index.js';
 
+import { getCompanyProfile, calculateOrderScenarios } from '../market/companyIntelligence.js';
+
 export const orderService = {
   /** Review step: runs deterministic risk engine and returns assessment before placement */
   async reviewOrder(userId, orderReq) {
     const riskSnapshot = await riskService.assessOrder(userId, orderReq);
+    const quote = await marketService.getQuote(orderReq.symbol).catch(() => ({ ltp: 1000 }));
+    const companyProfile = getCompanyProfile(orderReq.symbol, quote?.ltp);
+    const scenarioAnalysis = calculateOrderScenarios({
+      symbol: orderReq.symbol,
+      side: orderReq.side,
+      quantity: orderReq.quantity,
+      orderType: orderReq.orderType,
+      limitPrice: orderReq.limitPrice,
+      currentPrice: quote?.ltp,
+    });
     return {
       order: orderReq,
       riskSnapshot,
+      companyProfile,
+      scenarioAnalysis,
     };
   },
 

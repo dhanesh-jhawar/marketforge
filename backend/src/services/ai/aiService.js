@@ -73,7 +73,7 @@ export const aiService = {
     };
   },
 
-  /** Explains an order's deterministic risk assessment in natural language */
+  /** Explains an order's deterministic risk assessment in natural language with company records and profit/loss scenarios */
   async explainOrder(userId, payload = {}) {
     const order = payload.order || payload.orderDraft || payload;
     let snapshot = payload.riskSnapshot || payload.riskAnalysis;
@@ -81,7 +81,39 @@ export const aiService = {
       snapshot = await riskService.assessOrder(userId, order);
     }
 
-    const prompt = `Please explain the following order review and deterministic risk assessment to me as a learner. Help me understand why these limits and warnings exist and what they mean for my virtual portfolio.`;
+    const { getCompanyProfile, calculateOrderScenarios } = await import('../market/companyIntelligence.js');
+    const symbol = order?.symbol ? String(order.symbol).toUpperCase() : 'RELIANCE';
+    const quote = await marketService.getQuote(symbol).catch(() => ({ ltp: 1000 }));
+    const company = payload.companyProfile || getCompanyProfile(symbol, quote?.ltp);
+    const scenarios = payload.scenarioAnalysis || calculateOrderScenarios({
+      symbol,
+      side: order?.side,
+      quantity: order?.quantity,
+      orderType: order?.orderType,
+      limitPrice: order?.limitPrice,
+      currentPrice: quote?.ltp,
+    });
+
+    const target1 = scenarios.scenarios?.[0];
+    const target2 = scenarios.scenarios?.[1];
+    const stopLoss1 = scenarios.scenarios?.[3];
+    const stopLoss2 = scenarios.scenarios?.[4];
+
+    const prompt = `You are MarketForge Mentor conducting an authoritative pre-order pedagogical review for a virtual trade on the National Stock Exchange (NSE).
+DO NOT use generic greetings or filler intro sentences. Immediately produce a direct, professional, 3-section pedagogical breakdown:
+
+1. COMPANY SNAPSHOT & TRACK RECORD:
+Explain ${company.name} (${symbol}) in the ${company.sector} sector. Cite its 52-week trading range (₹${company.low52w} - ₹${company.high52w}), P/E ratio (${company.peRatio}), Market Cap (₹${company.marketCapCr?.toLocaleString('en-IN')} Cr), and past track record: "${company.pastRecords}".
+
+2. PROJECTED PROFIT & LOSS SCENARIOS (${order.side} ${order.quantity} shares @ ₹${scenarios.executionPrice}):
+Detail the exact pre-calculated profit/loss scenario numbers:
+- Upside Target (+5% / +10%): Net profit of ₹${target1?.netPnl?.toLocaleString('en-IN')} (+${target1?.netReturnPct}%) / ₹${target2?.netPnl?.toLocaleString('en-IN')} (+${target2?.netReturnPct}%) after estimated statutory taxes (STT & exchange turnover ~₹${scenarios.estimatedCharges}).
+- Downside Shock (-5% / -10%): Potential drawdown of -₹${Math.abs(stopLoss1?.netPnl || 0)?.toLocaleString('en-IN')} / -₹${Math.abs(stopLoss2?.netPnl || 0)?.toLocaleString('en-IN')}.
+- Breakeven Price: ₹${scenarios.breakevenPrice}.
+- Explain the key risk dynamics of ${order.side} ${order.product || 'CNC'} execution.
+
+3. RISK MANAGEMENT & DISCIPLINE TIP:
+Evaluate the position impact (${snapshot?.newPositionPct || snapshot?.portfolioImpactPct || 5}% of portfolio) and advise on setting a disciplined stop-loss before execution.`;
 
     const providers = getProviders();
     const result = await providers.ai.generate({
@@ -89,6 +121,8 @@ export const aiService = {
       messages: [{ role: 'user', content: prompt }],
       grounding: {
         order,
+        company,
+        scenarioAnalysis: scenarios,
         deterministicRiskAssessment: snapshot,
       },
     });
@@ -98,6 +132,8 @@ export const aiService = {
       message: result.text,
       reply: result.text,
       text: result.text,
+      companyProfile: company,
+      scenarioAnalysis: scenarios,
       riskSnapshot: snapshot,
     };
   },

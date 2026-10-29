@@ -6,9 +6,17 @@ import { asyncHandler, ok } from '../utils/index.js';
 
 const router = Router();
 
+import { getCompanyProfile } from '../services/market/companyIntelligence.js';
+
 router.get('/:symbol', asyncHandler(async (req, res) => {
   const security = await marketService.getSecurity(req.params.symbol);
   ok(res, security);
+}));
+
+router.get('/:symbol/profile', asyncHandler(async (req, res) => {
+  const quote = await marketService.getQuote(req.params.symbol).catch(() => ({ ltp: 1000 }));
+  const profile = getCompanyProfile(req.params.symbol, quote?.ltp);
+  ok(res, profile);
 }));
 
 router.get('/:symbol/quote', asyncHandler(async (req, res) => {
