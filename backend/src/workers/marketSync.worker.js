@@ -24,7 +24,11 @@ export async function runMarketSync() {
       await repos.indices.upsert(idx);
     }
 
-    log.debug(`Market sync cycle complete: ${valid.length} quotes updated`);
+    // Run active matching engine against new quotes
+    const { orderService } = await import('../services/order/orderService.js');
+    const matchedCount = await orderService.matchPendingOrders().catch(() => 0);
+
+    log.debug(`Market sync cycle complete: ${valid.length} quotes updated, ${matchedCount} orders matched`);
   } catch (err) {
     log.error('Market sync error', { error: err.message });
   }

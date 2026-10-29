@@ -27,4 +27,11 @@ router.get('/:symbol/news', asyncHandler(async (req, res) => {
   ok(res, news);
 }));
 
+router.get('/:symbol/orderbook', asyncHandler(async (req, res) => {
+  const quote = await marketService.getQuote(req.params.symbol);
+  const { generateSyntheticOrderBook } = await import('../engines/matchingEngine/index.js');
+  const book = generateSyntheticOrderBook(quote.ltp, 5);
+  ok(res, { symbol: req.params.symbol.toUpperCase(), ltp: quote.ltp, ...book });
+}));
+
 export default router;

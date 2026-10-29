@@ -16,12 +16,18 @@ CRITICAL MANDATES:
 
 export const aiService = {
   async chat(userId, { conversationId, message, context = {} }) {
+    let targetUserId = userId;
+    if (!targetUserId || targetUserId === 'anon') {
+      const demoUser = await repos.users.findOne({ email: 'trader@marketforge.dev' });
+      targetUserId = demoUser ? demoUser.id : 'demo-user-id';
+    }
+
     let convId = conversationId;
     if (!convId) {
       convId = uuid();
       await repos.aiConversations.insert({
         id: convId,
-        userId,
+        userId: targetUserId,
         title: message.slice(0, 40) + '...',
         context,
       });
@@ -60,6 +66,9 @@ export const aiService = {
     return {
       conversationId: convId,
       message: result.text,
+      reply: result.text,
+      explanation: result.text,
+      text: result.text,
       model: result.model,
     };
   },
@@ -86,6 +95,9 @@ export const aiService = {
 
     return {
       explanation: result.text,
+      message: result.text,
+      reply: result.text,
+      text: result.text,
       riskSnapshot: snapshot,
     };
   },

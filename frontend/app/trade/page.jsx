@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useMarketData } from '../../hooks/useMarketData.js';
 import { usePortfolio } from '../../hooks/usePortfolio.js';
 import { apiClient } from '../../lib/api/client.js';
 import StockChart from '../../components/charts/StockChart.jsx';
-import { formatINR, formatPct } from '../../lib/formatters/index.js';
+import { formatPct } from '../../lib/formatters/index.js';
 
 const POPULAR_SYMBOLS = [
   { symbol: 'RELIANCE', name: 'Reliance Industries', price: 2742.5, changePct: 1.2 },
@@ -17,6 +17,18 @@ const POPULAR_SYMBOLS = [
   { symbol: 'SBIN', name: 'State Bank of India', price: 812.3, changePct: -0.3 },
   { symbol: 'BHARTIARTL', name: 'Bharti Airtel', price: 1598.6, changePct: 0.95 },
   { symbol: 'JIOFIN', name: 'Jio Financial Services', price: 348.7, changePct: 2.4 },
+  { symbol: 'TATAMOTORS', name: 'Tata Motors', price: 965.4, changePct: 1.8 },
+  { symbol: 'MARUTI', name: 'Maruti Suzuki India', price: 11840.0, changePct: 0.4 },
+  { symbol: 'BAJFINANCE', name: 'Bajaj Finance', price: 6840.0, changePct: -0.8 },
+  { symbol: 'LT', name: 'Larsen & Toubro', price: 3520.0, changePct: 1.15 },
+  { symbol: 'SUNPHARMA', name: 'Sun Pharmaceutical', price: 1720.0, changePct: 0.7 },
+  { symbol: 'WIPRO', name: 'Wipro Limited', price: 545.2, changePct: -0.2 },
+  { symbol: 'ITC', name: 'ITC Limited', price: 465.3, changePct: 0.35 },
+  { symbol: 'ZOMATO', name: 'Zomato Limited', price: 265.0, changePct: 3.2 },
+  { symbol: 'ADANIENT', name: 'Adani Enterprises', price: 2980.0, changePct: 1.6 },
+  { symbol: 'COALINDIA', name: 'Coal India', price: 485.0, changePct: 0.5 },
+  { symbol: 'ASIANPAINT', name: 'Asian Paints', price: 2850.0, changePct: -0.9 },
+  { symbol: 'TATASTEEL', name: 'Tata Steel', price: 152.0, changePct: 1.1 },
 ];
 
 function TradeTerminal() {
@@ -29,7 +41,6 @@ function TradeTerminal() {
   const [product, setProduct] = useState('CNC');
   const [quantity, setQuantity] = useState(10);
   const [limitPrice, setLimitPrice] = useState('');
-  const [activeBottomTab, setActiveBottomTab] = useState('ORDERS');
 
   // Order Intelligence Modal state
   const [showIntelligenceModal, setShowIntelligenceModal] = useState(false);
@@ -40,77 +51,165 @@ function TradeTerminal() {
   const [aiExplanation, setAiExplanation] = useState('');
   const [loadingAi, setLoadingAi] = useState(false);
 
-  // Watchlist filter
+  // Watchlist & Search state (queries all 2,620 listed NSE companies)
   const [watchlistSearch, setWatchlistSearch] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const [searching, setSearching] = useState(false);
+
+  // Live Simulated L2 Order Book state
+  const [liveOrderBook, setLiveOrderBook] = useState(null);
 
   // Historical candles for current symbol
   const [candles, setCandles] = useState([]);
   const { quote } = useMarketData(symbol);
-  const { summary, holdings } = usePortfolio();
+  const { summary } = usePortfolio();
 
   // Fetch candle history whenever symbol changes
   useEffect(() => {
     apiClient(`/stocks/${symbol}/history?interval=1d&range=1Y`)
-      .then((c) => setCandles(c || []))
+      .then((c) => setCandles(Array.isArray(c) ? c : c?.candles || []))
       .catch(() => setCandles([]));
   }, [symbol]);
 
   // Current price helper
   const currentLtp = quote?.ltp || POPULAR_SYMBOLS.find((s) => s.symbol === symbol)?.price || 2500;
+
+  // Sync default limit price when switching to LIMIT order
+  useEffect(() => {
+    if (orderType === 'LIMIT' && !limitPrice) {
+      setLimitPrice(currentLtp.toFixed(2));
+    }
+  }, [orderType, currentLtp]);
+
   const estimatedOrderValue = useMemo(() => {
     const p = orderType === 'LIMIT' && Number(limitPrice) > 0 ? Number(limitPrice) : currentLtp;
     return p * Number(quantity || 0);
   }, [orderType, limitPrice, currentLtp, quantity]);
 
-  // Generate dynamic market depth based on current LTP
+  // Dynamic live search across all 2,620 NSE companies from backend SQLite database
+  useEffect(() => {
+    const q = watchlistSearch.trim();
+    if (!q) {
+      setSearchResults(null);
+      return;
+    }
+
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const matches = await apiClient(`/markets/search?q=${encodeURIComponent(q)}&limit=50`);
+        setSearchResults(Array.isArray(matches) ? matches : []);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [watchlistSearch]);
+
+  // Active L2 Order Book simulation (polls and updates synthetic depth with price-time priority)
+  useEffect(() => {
+    let isMounted = true;
+    const fetchBook = async () => {
+      try {
+        const data = await apiClient(`/stocks/${symbol}/orderbook`);
+        if (isMounted && data && data.bids) {
+          setLiveOrderBook(data);
+        }
+      } catch {
+        // Fallback local synthetic generator if network is delayed
+      }
+    };
+
+    fetchBook();
+    const interval = setInterval(fetchBook, 1500);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [symbol]);
+
+  // Compute market depth display
   const marketDepth = useMemo(() => {
+    if (liveOrderBook && liveOrderBook.bids && liveOrderBook.asks) {
+      return liveOrderBook;
+    }
     const base = currentLtp;
+    const tick = base > 1000 ? 0.25 : 0.05;
     const bids = [
-      { price: (base - 0.25).toFixed(2), orders: 12, qty: 1420 },
-      { price: (base - 0.5).toFixed(2), orders: 8, qty: 2850 },
-      { price: (base - 0.75).toFixed(2), orders: 19, qty: 5120 },
-      { price: (base - 1.0).toFixed(2), orders: 14, qty: 3890 },
-      { price: (base - 1.25).toFixed(2), orders: 22, qty: 7410 },
+      { price: (base - 1 * tick).toFixed(2), orders: 12, qty: 1420 },
+      { price: (base - 2 * tick).toFixed(2), orders: 8, qty: 2850 },
+      { price: (base - 3 * tick).toFixed(2), orders: 19, qty: 5120 },
+      { price: (base - 4 * tick).toFixed(2), orders: 14, qty: 3890 },
+      { price: (base - 5 * tick).toFixed(2), orders: 22, qty: 7410 },
     ];
     const asks = [
-      { price: (base + 0.25).toFixed(2), orders: 9, qty: 1180 },
-      { price: (base + 0.5).toFixed(2), orders: 15, qty: 3200 },
-      { price: (base + 0.75).toFixed(2), orders: 11, qty: 4500 },
-      { price: (base + 1.0).toFixed(2), orders: 20, qty: 6150 },
-      { price: (base + 1.25).toFixed(2), orders: 28, qty: 8900 },
+      { price: (base + 1 * tick).toFixed(2), orders: 9, qty: 1180 },
+      { price: (base + 2 * tick).toFixed(2), orders: 15, qty: 3200 },
+      { price: (base + 3 * tick).toFixed(2), orders: 11, qty: 4500 },
+      { price: (base + 4 * tick).toFixed(2), orders: 20, qty: 6150 },
+      { price: (base + 5 * tick).toFixed(2), orders: 28, qty: 8900 },
     ];
-    const totalBidQty = bids.reduce((acc, b) => acc + b.qty, 0);
-    const totalAskQty = asks.reduce((acc, a) => acc + a.qty, 0);
-    return { bids, asks, totalBidQty, totalAskQty };
-  }, [currentLtp]);
+    const totalBidQty = bids.reduce((acc, b) => acc + Number(b.qty), 0);
+    const totalAskQty = asks.reduce((acc, a) => acc + Number(a.qty), 0);
+    return { bids, asks, totalBidQty, totalAskQty, spread: (2 * tick).toFixed(2) };
+  }, [liveOrderBook, currentLtp]);
 
-  // Compute or fetch deterministic risk review
+  // Compute deterministic risk review + AUTOMATIC AI explanation
   const handleReviewOrder = async () => {
     setReviewing(true);
     setShowIntelligenceModal(true);
     setAiExplanation('');
+    setLoadingAi(true);
+
     try {
+      const payload = {
+        symbol,
+        side,
+        orderType,
+        product,
+        quantity: Number(quantity),
+        limitPrice: limitPrice ? Number(limitPrice) : undefined,
+      };
+
       const res = await apiClient('/orders/review', {
         method: 'POST',
-        body: {
-          symbol,
-          side,
-          orderType,
-          product,
-          quantity: Number(quantity),
-          limitPrice: limitPrice ? Number(limitPrice) : undefined,
-        },
+        body: payload,
       });
-      if (res && res.riskSnapshot) {
-        setRiskAssessment(res.riskSnapshot);
+
+      const snapshot = res?.riskSnapshot || res?.risk;
+      if (snapshot) {
+        setRiskAssessment(snapshot);
+
+        // Immediately and automatically generate AI grounded explanation with exact scenario details
+        try {
+          const aiRes = await apiClient('/ai/order-explanation', {
+            method: 'POST',
+            body: {
+              order: payload,
+              riskSnapshot: snapshot,
+            },
+          });
+          const explanationText = aiRes?.explanation || aiRes?.message || aiRes?.reply || aiRes?.text || '';
+          setAiExplanation(explanationText);
+        } catch {
+          // Pedagogical deterministic explanation fallback
+          const loss5 = snapshot.potentialLossAt5Pct ?? (estimatedOrderValue * 0.05);
+          const loss10 = snapshot.potentialLossAt10Pct ?? (estimatedOrderValue * 0.1);
+          setAiExplanation(
+            `MarketForge Pedagogical Review: Placing this ${side} order for ${quantity} shares of ${symbol} allocates approximately ${snapshot.newPositionPct || 10}% of your portfolio (₹${(snapshot.orderValue || estimatedOrderValue).toLocaleString('en-IN')}). If market prices drop 5%, estimated drawdown is ₹${loss5.toLocaleString('en-IN')}; at -10%, drawdown is ₹${loss10.toLocaleString('en-IN')}. Deterministic risk level: ${snapshot.riskLevel || 'MODERATE'} (Score: ${snapshot.riskScore || 45}/100). Maintain strict position sizing discipline before committing simulated capital.`
+          );
+        }
       } else {
-        // Fallback local deterministic calculation
         calculateLocalRisk();
       }
     } catch {
       calculateLocalRisk();
     } finally {
       setReviewing(false);
+      setLoadingAi(false);
     }
   };
 
@@ -122,39 +221,23 @@ function TradeTerminal() {
     const loss10 = Number((orderVal * 0.1).toFixed(2));
     const riskStatus = impactPct > 30 ? 'HIGH' : impactPct > 15 ? 'MODERATE' : 'LOW';
 
-    setRiskAssessment({
+    const localSnap = {
       orderValue: orderVal,
       portfolioImpactPct: impactPct,
       newPositionPct: impactPct,
       newSectorPct: Number((impactPct * 0.7).toFixed(1)),
       potentialLossAt5Pct: loss5,
       potentialLossAt10Pct: loss10,
-      volatility30d: 18.4,
+      volatility30d: 21.4,
       riskLevel: riskStatus,
+      riskScore: impactPct > 30 ? 75 : 42,
       canPlace: true,
       violations: [],
-    });
-  };
-
-  const handleRequestAiExplanation = async () => {
-    setLoadingAi(true);
-    try {
-      const res = await apiClient('/ai/order-explanation', {
-        method: 'POST',
-        body: {
-          order: { symbol, side, orderType, product, quantity: Number(quantity) },
-          riskSnapshot: riskAssessment,
-        },
-      });
-      setAiExplanation(res.explanation);
-    } catch {
-      const impact = riskAssessment?.portfolioImpactPct || 25;
-      setAiExplanation(
-        `MarketForge Intelligence: You're allocating ${impact}% of your portfolio to ${symbol}. If the market experiences a 10% pullback, this single order exposes your virtual capital to a loss of approximately ₹${(riskAssessment?.potentialLossAt10Pct || 0).toLocaleString('en-IN')}. Consider setting a tight stop-loss or sizing this position under 15% to maintain diversification.`
-      );
-    } finally {
-      setLoadingAi(false);
-    }
+    };
+    setRiskAssessment(localSnap);
+    setAiExplanation(
+      `MarketForge Pedagogical Review: Allocating ${impactPct}% of your virtual portfolio to ${symbol} (₹${orderVal.toLocaleString('en-IN')}). If market prices decline by 10%, your potential loss is ₹${loss10.toLocaleString('en-IN')}. Risk Level: ${riskStatus}. Always ensure no single asset exceeds your risk limit.`
+    );
   };
 
   const handleConfirmOrder = async () => {
@@ -181,10 +264,15 @@ function TradeTerminal() {
     }
   };
 
-  const filteredWatchlist = POPULAR_SYMBOLS.filter((s) =>
-    s.symbol.toLowerCase().includes(watchlistSearch.toLowerCase()) ||
-    s.name.toLowerCase().includes(watchlistSearch.toLowerCase())
-  );
+  // Watchlist rendering: if searching, show live matches; otherwise, show curated top Indian equities
+  const displayWatchlist = searchResults !== null
+    ? searchResults.map((s) => ({
+        symbol: s.symbol,
+        name: s.name || s.companyName || s.symbol,
+        price: s.price || s.ltp || (s.symbol === symbol ? currentLtp : 1250),
+        changePct: s.changePct ?? 0.85,
+      }))
+    : POPULAR_SYMBOLS;
 
   return (
     <div style={{ background: '#030807', minHeight: 'calc(100vh - 80px)', color: '#DDFBEA', fontFamily: 'var(--font-mono)' }}>
@@ -199,7 +287,7 @@ function TradeTerminal() {
           padding: '6px 12px',
         }}
       >
-        {POPULAR_SYMBOLS.map((s) => {
+        {POPULAR_SYMBOLS.slice(0, 10).map((s) => {
           const isSelected = s.symbol === symbol;
           const isUp = s.changePct >= 0;
           return (
@@ -235,12 +323,12 @@ function TradeTerminal() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '260px 1fr 340px',
+          gridTemplateColumns: '280px 1fr 340px',
           height: 'calc(100vh - 120px)',
           minHeight: '650px',
         }}
       >
-        {/* LEFT COLUMN: WATCHLIST */}
+        {/* LEFT COLUMN: WATCHLIST & DYNAMIC 2,620 NSE EQUITIES SEARCH */}
         <div
           style={{
             background: '#050B09',
@@ -251,20 +339,21 @@ function TradeTerminal() {
           }}
         >
           <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(57, 255, 136, 0.1)' }}>
-            <div style={{ fontSize: '11px', color: '#71877B', fontWeight: 700, marginBottom: '6px' }}>
-              NSE EQUITIES WATCHLIST
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '11px', color: '#39FF88', fontWeight: 800 }}>NSE EQUITIES UNIVERSE</span>
+              <span style={{ fontSize: '9px', color: '#71877B' }}>2,620 LISTED</span>
             </div>
             <input
               type="text"
-              placeholder="Filter symbol..."
+              placeholder="Search 2,000+ companies (e.g. TATA, RELIANCE, INFY)..."
               value={watchlistSearch}
               onChange={(e) => setWatchlistSearch(e.target.value)}
               style={{
                 width: '100%',
                 background: '#030807',
-                border: '1px solid rgba(57, 255, 136, 0.2)',
+                border: '1px solid rgba(57, 255, 136, 0.25)',
                 color: '#DDFBEA',
-                padding: '6px 8px',
+                padding: '7px 9px',
                 fontSize: '11px',
                 borderRadius: '2px',
                 fontFamily: 'var(--font-mono)',
@@ -273,49 +362,70 @@ function TradeTerminal() {
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {filteredWatchlist.map((item) => {
-              const active = item.symbol === symbol;
-              const isUp = item.changePct >= 0;
-              return (
-                <div
-                  key={item.symbol}
-                  onClick={() => setSymbol(item.symbol)}
-                  style={{
-                    padding: '10px 12px',
-                    borderBottom: '1px solid rgba(57, 255, 136, 0.05)',
-                    background: active ? 'rgba(57, 255, 136, 0.08)' : 'transparent',
-                    borderLeft: active ? '3px solid #39FF88' : '3px solid transparent',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    transition: 'background 0.15s',
-                  }}
-                >
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '12px', color: active ? '#39FF88' : '#DDFBEA' }}>
-                      {item.symbol}
+            {searching ? (
+              <div style={{ padding: '16px', textAlign: 'center', color: '#38D9FF', fontSize: '11px' }}>
+                Searching 2,620 listed NSE securities...
+              </div>
+            ) : displayWatchlist.length === 0 ? (
+              <div style={{ padding: '16px', textAlign: 'center', color: '#71877B', fontSize: '11px' }}>
+                No matching NSE equities found.
+              </div>
+            ) : (
+              displayWatchlist.map((item) => {
+                const active = item.symbol === symbol;
+                const isUp = (item.changePct ?? 0) >= 0;
+                return (
+                  <div
+                    key={item.symbol}
+                    onClick={() => {
+                      setSymbol(item.symbol);
+                      setOrderSuccess(null);
+                    }}
+                    style={{
+                      padding: '10px 12px',
+                      borderBottom: '1px solid rgba(57, 255, 136, 0.05)',
+                      background: active ? 'rgba(57, 255, 136, 0.1)' : 'transparent',
+                      borderLeft: active ? '3px solid #39FF88' : '3px solid transparent',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '12px', color: active ? '#39FF88' : '#DDFBEA' }}>
+                        {item.symbol}
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#71877B', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.name}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '10px', color: '#71877B', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {item.name}
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#DDFBEA' }}>
+                        ₹{Number(item.price).toFixed(2)}
+                      </div>
+                      <div style={{ fontSize: '10px', color: isUp ? '#39FF88' : '#FF4D67', fontWeight: 700 }}>
+                        {isUp ? '+' : ''}{item.changePct}%
+                      </div>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#DDFBEA' }}>
-                      ₹{item.price.toFixed(2)}
-                    </div>
-                    <div style={{ fontSize: '10px', color: isUp ? '#39FF88' : '#FF4D67', fontWeight: 700 }}>
-                      {isUp ? '+' : ''}{item.changePct}%
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
-        {/* CENTER COLUMN: HIGHCHARTS CANDLESTICK CHART & BOTTOM TABS */}
-        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#030807' }}>
+        {/* CENTER COLUMN: FULL-HEIGHT CANDLESTICK CHART (NOTHING UNDER THE GRAPH) */}
+        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#030807', height: '100%' }}>
+          {/* Order Success Banner (if placed) */}
+          {orderSuccess && (
+            <div style={{ padding: '8px 16px', background: 'rgba(57, 255, 136, 0.15)', borderBottom: '1px solid #39FF88', color: '#39FF88', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>✔ Order #{orderSuccess.id?.slice(0, 8)}: {orderSuccess.side} {orderSuccess.quantity}x {orderSuccess.symbol} ({orderSuccess.status}) @ ₹{Number(orderSuccess.avgFillPrice || currentLtp).toFixed(2)}</span>
+              <button onClick={() => setOrderSuccess(null)} style={{ background: 'transparent', border: 'none', color: '#39FF88', cursor: 'pointer', fontWeight: 900 }}>✕</button>
+            </div>
+          )}
+
           {/* Chart Header Bar */}
           <div
             style={{
@@ -334,7 +444,7 @@ function TradeTerminal() {
                 {formatPct(quote?.changePct || 0.85)}
               </span>
               <span style={{ fontSize: '10px', color: '#38D9FF', border: '1px solid rgba(56, 217, 255, 0.3)', padding: '1px 6px', borderRadius: '2px' }}>
-                NSE • HIGHCHARTS STOCK
+                NSE • HIGHCHARTS CANDLESTICK STREAM
               </span>
             </div>
             <div style={{ fontSize: '11px', color: '#71877B' }}>
@@ -342,148 +452,13 @@ function TradeTerminal() {
             </div>
           </div>
 
-          {/* Highcharts Stock Canvas Container */}
-          <div style={{ flex: '1 1 55%', minHeight: '340px', padding: '8px' }}>
-            <StockChart symbol={symbol} candles={candles} height={380} indicators={true} />
-          </div>
-
-          {/* BOTTOM SECTION: ORDERS / POSITIONS / HOLDINGS TABS */}
-          <div
-            style={{
-              flex: '1 1 45%',
-              borderTop: '1px solid rgba(57, 255, 136, 0.15)',
-              background: '#050B09',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Tab Bar */}
-            <div
-              style={{
-                display: 'flex',
-                gap: '8px',
-                padding: '6px 12px',
-                background: '#07130F',
-                borderBottom: '1px solid rgba(57, 255, 136, 0.1)',
-                fontSize: '11px',
-              }}
-            >
-              {['ORDERS', 'POSITIONS', 'HOLDINGS', 'TRADE HISTORY'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveBottomTab(tab)}
-                  style={{
-                    padding: '4px 12px',
-                    borderRadius: '2px',
-                    background: activeBottomTab === tab ? '#0B3D2E' : 'transparent',
-                    border: activeBottomTab === tab ? '1px solid #39FF88' : '1px solid transparent',
-                    color: activeBottomTab === tab ? '#39FF88' : '#71877B',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            {/* Tab Content Area */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
-              {activeBottomTab === 'HOLDINGS' && (
-                <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ color: '#71877B', borderBottom: '1px solid rgba(57, 255, 136, 0.1)' }}>
-                      <th style={{ padding: '6px' }}>SYMBOL</th>
-                      <th style={{ padding: '6px' }}>QTY</th>
-                      <th style={{ padding: '6px' }}>AVG PRICE</th>
-                      <th style={{ padding: '6px' }}>LTP</th>
-                      <th style={{ padding: '6px' }}>CURRENT VALUE</th>
-                      <th style={{ padding: '6px' }}>P&L</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(holdings && holdings.length > 0 ? holdings : [
-                      { symbol: 'RELIANCE', quantity: 15, avgPrice: 2680.0, ltp: 2742.5, currentValue: 41137.5, pnl: 937.5, pnlPct: 2.33 },
-                      { symbol: 'INFY', quantity: 20, avgPrice: 1820.0, ltp: 1845.2, currentValue: 36904.0, pnl: 504.0, pnlPct: 1.38 },
-                    ]).map((h) => {
-                      const isUp = h.pnl >= 0;
-                      return (
-                        <tr key={h.symbol} style={{ borderBottom: '1px solid rgba(57, 255, 136, 0.04)' }}>
-                          <td style={{ padding: '6px', fontWeight: 700, color: '#38D9FF' }}>{h.symbol}</td>
-                          <td style={{ padding: '6px' }}>{h.quantity}</td>
-                          <td style={{ padding: '6px' }}>₹{h.avgPrice.toFixed(2)}</td>
-                          <td style={{ padding: '6px' }}>₹{h.ltp.toFixed(2)}</td>
-                          <td style={{ padding: '6px', fontWeight: 700 }}>₹{h.currentValue.toLocaleString('en-IN')}</td>
-                          <td style={{ padding: '6px', color: isUp ? '#39FF88' : '#FF4D67', fontWeight: 700 }}>
-                            {isUp ? '+' : ''}₹{h.pnl.toFixed(2)} ({isUp ? '+' : ''}{h.pnlPct}%)
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-
-              {activeBottomTab === 'ORDERS' && (
-                <div style={{ fontSize: '11px' }}>
-                  {orderSuccess ? (
-                    <div style={{ padding: '8px 12px', background: 'rgba(57, 255, 136, 0.1)', border: '1px solid #39FF88', color: '#39FF88', borderRadius: '2px', marginBottom: '8px' }}>
-                      ✔ Order #{orderSuccess.id || 'MF-9481'} {orderSuccess.side} {orderSuccess.quantity}x {orderSuccess.symbol} FILLED @ ₹{orderSuccess.avgFillPrice || currentLtp.toFixed(2)}
-                    </div>
-                  ) : null}
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                    <thead>
-                      <tr style={{ color: '#71877B', borderBottom: '1px solid rgba(57, 255, 136, 0.1)' }}>
-                        <th style={{ padding: '6px' }}>TIME</th>
-                        <th style={{ padding: '6px' }}>SYMBOL</th>
-                        <th style={{ padding: '6px' }}>TYPE</th>
-                        <th style={{ padding: '6px' }}>SIDE</th>
-                        <th style={{ padding: '6px' }}>QTY</th>
-                        <th style={{ padding: '6px' }}>PRICE</th>
-                        <th style={{ padding: '6px' }}>STATUS</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr style={{ borderBottom: '1px solid rgba(57, 255, 136, 0.04)' }}>
-                        <td style={{ padding: '6px', color: '#71877B' }}>10:45:12</td>
-                        <td style={{ padding: '6px', fontWeight: 700, color: '#38D9FF' }}>RELIANCE</td>
-                        <td style={{ padding: '6px' }}>CNC / MARKET</td>
-                        <td style={{ padding: '6px', color: '#39FF88', fontWeight: 700 }}>BUY</td>
-                        <td style={{ padding: '6px' }}>10</td>
-                        <td style={{ padding: '6px' }}>₹2,742.50</td>
-                        <td style={{ padding: '6px', color: '#39FF88' }}>COMPLETE</td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid rgba(57, 255, 136, 0.04)' }}>
-                        <td style={{ padding: '6px', color: '#71877B' }}>09:32:04</td>
-                        <td style={{ padding: '6px', fontWeight: 700, color: '#38D9FF' }}>TCS</td>
-                        <td style={{ padding: '6px' }}>CNC / LIMIT</td>
-                        <td style={{ padding: '6px', color: '#39FF88', fontWeight: 700 }}>BUY</td>
-                        <td style={{ padding: '6px' }}>5</td>
-                        <td style={{ padding: '6px' }}>₹3,900.00</td>
-                        <td style={{ padding: '6px', color: '#39FF88' }}>COMPLETE</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {activeBottomTab === 'POSITIONS' && (
-                <div style={{ textAlign: 'center', padding: '24px', color: '#71877B', fontSize: '11px' }}>
-                  No open intraday MIS positions. All orders executed under delivery CNC.
-                </div>
-              )}
-
-              {activeBottomTab === 'TRADE HISTORY' && (
-                <div style={{ fontSize: '11px', color: '#94B8A3' }}>
-                  Showing last 5 virtual executions for this session. All executions verified by deterministic matching engine.
-                </div>
-              )}
-            </div>
+          {/* Highcharts Stock Canvas Container: Fills 100% of height, completely unobstructed */}
+          <div style={{ flex: 1, minHeight: 0, padding: '8px', display: 'flex', flexDirection: 'column' }}>
+            <StockChart symbol={symbol} candles={candles} height={600} indicators={true} />
           </div>
         </div>
 
-        {/* RIGHT COLUMN: MARKET DEPTH + ORDER ENTRY */}
+        {/* RIGHT COLUMN: LIVE ORDER BOOK (L2) & ORDER ENTRY FORM */}
         <div
           style={{
             background: '#050B09',
@@ -493,11 +468,13 @@ function TradeTerminal() {
             overflowY: 'auto',
           }}
         >
-          {/* Market Depth Section */}
-          <div style={{ padding: '12px', borderBottom: '1px solid rgba(57, 255, 136, 0.15)' }}>
+          {/* LIVE ORDER BOOK (L2 DEPTH SIMULATION) */}
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(57, 255, 136, 0.15)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: '#38D9FF' }}>MARKET DEPTH (L2)</span>
-              <span style={{ fontSize: '10px', color: '#71877B' }}>LIVE ORDER BOOK</span>
+              <span style={{ fontSize: '11px', fontWeight: 900, color: '#39FF88' }}>MARKET DEPTH (L2)</span>
+              <span style={{ fontSize: '9px', color: '#38D9FF', background: 'rgba(56, 217, 255, 0.1)', padding: '1px 5px', borderRadius: '2px' }}>
+                PRICE-TIME PRIORITY
+              </span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '10px' }}>
@@ -519,7 +496,7 @@ function TradeTerminal() {
                       position: 'relative',
                     }}
                   >
-                    <span style={{ fontWeight: 700 }}>₹{b.price}</span>
+                    <span style={{ fontWeight: 700 }}>₹{Number(b.price).toFixed(2)}</span>
                     <span style={{ color: '#71877B' }}>{b.orders}</span>
                     <span>{b.qty}</span>
                   </div>
@@ -548,7 +525,7 @@ function TradeTerminal() {
                       position: 'relative',
                     }}
                   >
-                    <span style={{ fontWeight: 700 }}>₹{a.price}</span>
+                    <span style={{ fontWeight: 700 }}>₹{Number(a.price).toFixed(2)}</span>
                     <span style={{ color: '#71877B' }}>{a.orders}</span>
                     <span>{a.qty}</span>
                   </div>
@@ -558,6 +535,11 @@ function TradeTerminal() {
                   <span>{marketDepth.totalAskQty.toLocaleString('en-IN')}</span>
                 </div>
               </div>
+            </div>
+
+            <div style={{ marginTop: '6px', fontSize: '10px', color: '#71877B', display: 'flex', justifyContent: 'space-between' }}>
+              <span>SPREAD: <b style={{ color: '#DDFBEA' }}>₹{marketDepth.spread || '0.50'}</b></span>
+              <span style={{ color: '#39FF88' }}>● LIVE MATCHING ACTIVE</span>
             </div>
           </div>
 
@@ -654,8 +636,9 @@ function TradeTerminal() {
               <input
                 type="number"
                 min="1"
+                step="1"
                 value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
                 style={{
                   width: '100%',
                   padding: '8px',
@@ -670,7 +653,7 @@ function TradeTerminal() {
               />
             </div>
 
-            {/* Limit Price if LIMIT */}
+            {/* Limit Price (if LIMIT order) */}
             {orderType === 'LIMIT' && (
               <div>
                 <label style={{ fontSize: '10px', color: '#71877B', display: 'block', marginBottom: '4px' }}>
@@ -716,7 +699,7 @@ function TradeTerminal() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71877B' }}>
                 <span>AVAILABLE FUNDS:</span>
-                <span style={{ color: '#39FF88', fontWeight: 700 }}>₹{(summary?.funds?.availableCash || 100000).toLocaleString('en-IN')}</span>
+                <span style={{ color: '#39FF88', fontWeight: 700 }}>₹{(summary?.funds?.availableCash || summary?.availableCash || 100000).toLocaleString('en-IN')}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#71877B' }}>
                 <span>EST. CHARGES:</span>
@@ -742,7 +725,7 @@ function TradeTerminal() {
                 boxShadow: side === 'BUY' ? '0 0 15px rgba(57, 255, 136, 0.4)' : '0 0 15px rgba(255, 77, 103, 0.4)',
               }}
             >
-              {reviewing ? 'EVALUATING RISK...' : 'REVIEW ORDER'}
+              {reviewing ? 'EVALUATING RISK & AI MENTOR...' : 'REVIEW ORDER'}
             </button>
             <div style={{ fontSize: '10px', color: '#71877B', textAlign: 'center' }}>
               Virtual Execution • Mandatory Risk Review
@@ -771,7 +754,7 @@ function TradeTerminal() {
               background: '#050B09',
               border: '1px solid #39FF88',
               boxShadow: '0 0 35px rgba(57, 255, 136, 0.3)',
-              width: '640px',
+              width: '680px',
               maxWidth: '100%',
               borderRadius: '2px',
               display: 'flex',
@@ -808,22 +791,22 @@ function TradeTerminal() {
                   borderRadius: '2px',
                   fontSize: '11px',
                   fontWeight: 800,
-                  background: riskAssessment?.riskLevel === 'HIGH' ? 'rgba(255, 77, 103, 0.2)' : 'rgba(57, 255, 136, 0.15)',
-                  color: riskAssessment?.riskLevel === 'HIGH' ? '#FF4D67' : '#39FF88',
-                  border: riskAssessment?.riskLevel === 'HIGH' ? '1px solid #FF4D67' : '1px solid #39FF88',
+                  background: riskAssessment?.riskLevel === 'HIGH' || riskAssessment?.riskLevel === 'VERY_HIGH' ? 'rgba(255, 77, 103, 0.2)' : 'rgba(57, 255, 136, 0.15)',
+                  color: riskAssessment?.riskLevel === 'HIGH' || riskAssessment?.riskLevel === 'VERY_HIGH' ? '#FF4D67' : '#39FF88',
+                  border: riskAssessment?.riskLevel === 'HIGH' || riskAssessment?.riskLevel === 'VERY_HIGH' ? '1px solid #FF4D67' : '1px solid #39FF88',
                 }}
               >
-                RISK: {riskAssessment?.riskLevel || 'MODERATE'}
+                RISK: {riskAssessment?.riskLevel || 'MODERATE'} (SCORE: {riskAssessment?.riskScore ?? 45}/100)
               </span>
             </div>
 
             {/* Modal Body: Financial Telemetry */}
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
               <div style={{ fontSize: '13px', color: '#DDFBEA' }}>
                 Ordering <b style={{ color: side === 'BUY' ? '#39FF88' : '#FF4D67' }}>{side} {quantity} SHARES</b> of <b style={{ color: '#38D9FF' }}>{symbol}</b> ({orderType} • {product})
               </div>
 
-              {/* Exact Required Grid */}
+              {/* Exact Scenario Metric Grid */}
               <div
                 style={{
                   display: 'grid',
@@ -837,102 +820,97 @@ function TradeTerminal() {
               >
                 <div>
                   <div style={{ fontSize: '10px', color: '#71877B' }}>ORDER VALUE</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#DDFBEA', marginTop: '2px' }}>
-                    ₹{(riskAssessment?.orderValue || estimatedOrderValue).toLocaleString('en-IN')}
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#DDFBEA', marginTop: '2px' }}>
+                    ₹{(riskAssessment?.orderValue || estimatedOrderValue).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </div>
                 </div>
 
                 <div>
                   <div style={{ fontSize: '10px', color: '#71877B' }}>PORTFOLIO IMPACT</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#38D9FF', marginTop: '2px' }}>
-                    {riskAssessment?.portfolioImpactPct || 27.4}%
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#38D9FF', marginTop: '2px' }}>
+                    {riskAssessment?.portfolioImpactPct || riskAssessment?.newPositionPct || 10}%
                   </div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '10px', color: '#71877B' }}>NEW POSITION</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#38D9FF', marginTop: '2px' }}>
-                    {riskAssessment?.newPositionPct || 27.4}%
+                  <div style={{ fontSize: '10px', color: '#71877B' }}>NEW POSITION %</div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#38D9FF', marginTop: '2px' }}>
+                    {riskAssessment?.newPositionPct || 10}%
                   </div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '10px', color: '#71877B' }}>SECTOR CONCENTRATION</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#DDFBEA', marginTop: '2px' }}>
-                    {riskAssessment?.newSectorPct || 18.2}%
+                  <div style={{ fontSize: '10px', color: '#71877B' }}>SECTOR EXPOSURE</div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#DDFBEA', marginTop: '2px' }}>
+                    {riskAssessment?.newSectorPct || 15}%
                   </div>
                 </div>
 
                 <div>
                   <div style={{ fontSize: '10px', color: '#71877B' }}>LOSS AT -5%</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#FF4D67', marginTop: '2px' }}>
-                    -₹{(riskAssessment?.potentialLossAt5Pct || (estimatedOrderValue * 0.05)).toLocaleString('en-IN')}
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#FF4D67', marginTop: '2px' }}>
+                    -₹{(riskAssessment?.potentialLossAt5Pct || (estimatedOrderValue * 0.05)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </div>
                 </div>
 
                 <div>
                   <div style={{ fontSize: '10px', color: '#71877B' }}>LOSS AT -10%</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#FF4D67', marginTop: '2px' }}>
-                    -₹{(riskAssessment?.potentialLossAt10Pct || (estimatedOrderValue * 0.1)).toLocaleString('en-IN')}
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#FF4D67', marginTop: '2px' }}>
+                    -₹{(riskAssessment?.potentialLossAt10Pct || (estimatedOrderValue * 0.1)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </div>
                 </div>
 
                 <div>
                   <div style={{ fontSize: '10px', color: '#71877B' }}>30-DAY VOLATILITY</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#39FF88', marginTop: '2px' }}>
-                    {riskAssessment?.volatility30d || 18.4}%
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#39FF88', marginTop: '2px' }}>
+                    {riskAssessment?.volatility30d || 21.4}%
                   </div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '10px', color: '#71877B' }}>RISK STATUS</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: riskAssessment?.riskLevel === 'HIGH' ? '#FF4D67' : '#39FF88', marginTop: '2px' }}>
-                    {riskAssessment?.riskLevel || 'MODERATE'}
+                  <div style={{ fontSize: '10px', color: '#71877B' }}>RULE COMPLIANCE</div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: riskAssessment?.canPlace === false ? '#FF4D67' : '#39FF88', marginTop: '2px' }}>
+                    {riskAssessment?.canPlace === false ? 'BLOCKING VIOLATION' : 'PASSED (VIRTUAL)'}
                   </div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '10px', color: '#71877B' }}>RULE CHECK</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#39FF88', marginTop: '2px' }}>
-                    PASS (VIRTUAL)
+                  <div style={{ fontSize: '10px', color: '#71877B' }}>FUNDS AFTER ORDER</div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#DDFBEA', marginTop: '2px' }}>
+                    ₹{(riskAssessment?.fundsAfterOrder || (100000 - estimatedOrderValue)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                   </div>
                 </div>
               </div>
 
-              {/* AI Explanation Area */}
+              {/* Rule Violations Warning Banner (if any) */}
+              {riskAssessment?.violations && riskAssessment.violations.length > 0 && (
+                <div style={{ padding: '10px 14px', background: 'rgba(255, 77, 103, 0.12)', border: '1px solid #FF4D67', borderRadius: '2px', fontSize: '11px', color: '#FF4D67' }}>
+                  <b style={{ display: 'block', marginBottom: '4px' }}>⚠ RISK RULE WARNINGS:</b>
+                  {riskAssessment.violations.map((v, i) => (
+                    <div key={i}>• {v.message}</div>
+                  ))}
+                </div>
+              )}
+
+              {/* AI Explanation Area (Grounded Pedagogy) */}
               <div
                 style={{
                   background: '#030807',
-                  border: '1px solid rgba(56, 217, 255, 0.25)',
-                  padding: '12px 14px',
+                  border: '1px solid rgba(56, 217, 255, 0.3)',
+                  padding: '14px 16px',
                   borderRadius: '2px',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#38D9FF' }}>
-                    AI GROUNDED EXPLANATION
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#38D9FF', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🤖</span> AI PEDAGOGICAL BREAKDOWN (GOOGLE GEMINI)
                   </span>
-                  {!aiExplanation && (
-                    <button
-                      onClick={handleRequestAiExplanation}
-                      disabled={loadingAi}
-                      style={{
-                        padding: '3px 8px',
-                        background: 'rgba(56, 217, 255, 0.1)',
-                        border: '1px solid #38D9FF',
-                        color: '#38D9FF',
-                        fontSize: '10px',
-                        borderRadius: '2px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {loadingAi ? 'GENERATING...' : 'EXPLAIN ORDER RISK'}
-                    </button>
+                  {loadingAi && (
+                    <span style={{ fontSize: '10px', color: '#38D9FF' }}>Analyzing scenario telemetry...</span>
                   )}
                 </div>
-                <div style={{ fontSize: '11px', color: '#94B8A3', lineHeight: 1.5 }}>
-                  {aiExplanation ||
-                    `"You're allocating ${riskAssessment?.portfolioImpactPct || 27.4}% of your portfolio to this position. A 10% decline could reduce your capital by approximately ₹${(riskAssessment?.potentialLossAt10Pct || (estimatedOrderValue * 0.1)).toLocaleString('en-IN')}. Verify if your risk tolerance accommodates this concentration."`}
+                <div style={{ fontSize: '12px', color: '#DDFBEA', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+                  {loadingAi ? 'Synthesizing pedagogical order review from authoritative engine metrics...' : aiExplanation}
                 </div>
               </div>
             </div>
@@ -982,20 +960,20 @@ function TradeTerminal() {
 
               <button
                 onClick={handleConfirmOrder}
-                disabled={submitting}
+                disabled={submitting || riskAssessment?.canPlace === false}
                 style={{
                   padding: '8px 24px',
                   borderRadius: '2px',
-                  background: side === 'BUY' ? '#39FF88' : '#FF4D67',
+                  background: riskAssessment?.canPlace === false ? '#71877B' : side === 'BUY' ? '#39FF88' : '#FF4D67',
                   color: '#030807',
                   border: 'none',
                   fontSize: '12px',
                   fontWeight: 900,
-                  cursor: submitting ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 0 15px rgba(57, 255, 136, 0.4)',
+                  cursor: submitting || riskAssessment?.canPlace === false ? 'not-allowed' : 'pointer',
+                  boxShadow: riskAssessment?.canPlace === false ? 'none' : '0 0 15px rgba(57, 255, 136, 0.4)',
                 }}
               >
-                {submitting ? 'EXECUTING...' : 'CONFIRM ORDER'}
+                {submitting ? 'EXECUTING...' : riskAssessment?.canPlace === false ? 'RULE BLOCKED' : 'CONFIRM ORDER'}
               </button>
             </div>
           </div>

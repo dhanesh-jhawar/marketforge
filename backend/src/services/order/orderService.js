@@ -237,4 +237,40 @@ export const orderService = {
     if (!order || order.userId !== userId) throw ApiError.notFound('Order not found');
     return order;
   },
+
+  async matchPendingOrders() {
+    const openOrders = await repos.orders.findMany({ status: ORDER_STATUS.OPEN });
+    const partialOrders = await repos.orders.findMany({ status: ORDER_STATUS.PARTIALLY_FILLED });
+    const pending = [...openOrders, ...partialOrders];
+    if (!pending.length) return 0;
+
+    // Price-Time Priority (FIFO within price level)
+    const sorted = pending.sort((a, b) => {
+      if (a.side === ORDER_SIDE.BUY) {
+        const pa = a.limitPrice || 9999999;
+        const pb = b.limitPrice || 9999999;
+        if (pb !== pa) return pb - pa;
+      } else {
+        const pa = a.limitPrice || 0;
+        const pb = b.limitPrice || 0;
+        if (pa !== pb) return pa - pb;
+      }
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+
+    let count = 0;
+    for (const ord of sorted) {
+      try {
+        const quote = await marketService.getQuote(ord.symbol);
+        const match = evaluateOrder(ord, quote, { slippageBps: config.trading.slippageBps, allowPartial: true });
+        if (match.fill) {
+          await this.tryExecuteOrder(ord, quote);
+          count++;
+        }
+      } catch {
+        // continue
+      }
+    }
+    return count;
+  },
 };

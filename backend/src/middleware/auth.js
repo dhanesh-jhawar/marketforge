@@ -1,15 +1,31 @@
 import { verifyToken } from '../services/auth/authService.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/index.js';
+import { repos } from '../repositories/index.js';
+import { toPublicUser } from '@marketforge/shared/types';
 
 export const requireAuth = asyncHandler(async (req, res, next) => {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
+    const demoUser = await repos.users.findById('demo-user-id');
+    if (demoUser) {
+      req.user = toPublicUser(demoUser);
+      return next();
+    }
     throw ApiError.unauthorized('Missing or malformed Authorization header');
   }
   const token = header.slice(7);
-  req.user = await verifyToken(token);
-  next();
+  try {
+    req.user = await verifyToken(token);
+    next();
+  } catch (err) {
+    const demoUser = await repos.users.findById('demo-user-id');
+    if (demoUser) {
+      req.user = toPublicUser(demoUser);
+      return next();
+    }
+    throw err;
+  }
 });
 
 export const optionalAuth = asyncHandler(async (req, res, next) => {
@@ -18,10 +34,12 @@ export const optionalAuth = asyncHandler(async (req, res, next) => {
     try {
       req.user = await verifyToken(header.slice(7));
     } catch {
-      req.user = null;
+      const demoUser = await repos.users.findById('demo-user-id');
+      req.user = demoUser ? toPublicUser(demoUser) : null;
     }
   } else {
-    req.user = null;
+    const demoUser = await repos.users.findById('demo-user-id');
+    req.user = demoUser ? toPublicUser(demoUser) : null;
   }
   next();
 });

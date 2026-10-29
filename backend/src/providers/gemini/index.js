@@ -23,10 +23,10 @@ export class GeminiProvider extends AIProvider {
     };
 
     const candidateModels = [
+      'gemini-3.5-flash',
       this.cfg.model,
       'gemini-flash-latest',
       'gemini-2.5-flash-lite',
-      'gemini-3.5-flash',
       'gemini-pro-latest',
     ].filter(Boolean);
 

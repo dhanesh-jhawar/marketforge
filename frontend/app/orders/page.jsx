@@ -67,8 +67,9 @@ export default function OrdersPage() {
   }, [orders]);
 
   const filteredOrders = useMemo(() => {
-    if (activeTab === 'OPEN') return allOrders.filter((o) => o.status === 'OPEN' || o.status === 'PARTIALLY_FILLED');
-    if (activeTab === 'COMPLETED') return allOrders.filter((o) => o.status === 'FILLED');
+    if (activeTab === 'OPEN (NOT FILLED)') return allOrders.filter((o) => o.status === 'OPEN');
+    if (activeTab === 'PARTIALLY FILLED') return allOrders.filter((o) => o.status === 'PARTIALLY_FILLED');
+    if (activeTab === 'FILLED' || activeTab === 'COMPLETED') return allOrders.filter((o) => o.status === 'FILLED');
     if (activeTab === 'CANCELLED') return allOrders.filter((o) => o.status === 'CANCELLED' || o.status === 'REJECTED');
     return allOrders;
   }, [allOrders, activeTab]);
@@ -129,7 +130,7 @@ export default function OrdersPage() {
             marginBottom: '16px',
           }}
         >
-          {['ALL', 'OPEN', 'COMPLETED', 'CANCELLED'].map((tab) => (
+          {['ALL', 'FILLED', 'OPEN (NOT FILLED)', 'PARTIALLY FILLED', 'CANCELLED'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -144,7 +145,7 @@ export default function OrdersPage() {
                 cursor: 'pointer',
               }}
             >
-              {tab === 'OPEN' ? 'OPEN ORDERS' : tab}
+              {tab}
             </button>
           ))}
         </div>

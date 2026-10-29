@@ -13,8 +13,9 @@ export function AIProvider({ children }) {
     setMessages((prev) => [...prev, { role: 'user', content: message }]);
     try {
       const res = await apiClient('/ai/chat', { method: 'POST', body: { message, context } });
-      setMessages((prev) => [...prev, { role: 'assistant', content: res.message }]);
-      return res.message;
+      const reply = res?.message || res?.reply || res?.explanation || res?.text || 'Educational response received.';
+      setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+      return reply;
     } finally {
       setLoading(false);
     }

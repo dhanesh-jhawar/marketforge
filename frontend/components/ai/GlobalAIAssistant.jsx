@@ -76,7 +76,7 @@ export default function GlobalAIAssistant() {
         ...prev,
         {
           role: 'assistant',
-          text: res.reply || res.explanation || 'MarketForge Intelligence: Keep in mind that capital preservation and risk sizing are paramount in equity trading.',
+          text: res?.message || res?.reply || res?.explanation || res?.text || 'MarketForge Intelligence: Keep in mind that capital preservation and risk sizing are paramount in equity trading.',
         },
       ]);
     } catch {

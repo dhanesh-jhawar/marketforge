@@ -10,10 +10,50 @@ import { getIstSession } from '../../services/market/marketHours.js';
  */
 const state = new Map(); // symbol -> { ltp, open, high, low, prevClose, volume, vol }
 
+const INDIAN_BENCHMARK_PRICES = {
+  RELIANCE: 2742.50,
+  TCS: 3912.80,
+  INFY: 1845.20,
+  HDFCBANK: 1682.40,
+  ICICIBANK: 1248.90,
+  SBIN: 812.30,
+  BHARTIARTL: 1598.60,
+  JIOFIN: 348.70,
+  ITC: 465.30,
+  TATAMOTORS: 965.40,
+  MARUTI: 11840.00,
+  BAJFINANCE: 6840.00,
+  LT: 3520.00,
+  SUNPHARMA: 1720.00,
+  WIPRO: 545.20,
+  HCLTECH: 1825.00,
+  KOTAKBANK: 1790.00,
+  AXISBANK: 1180.00,
+  NTPC: 410.00,
+  ONGC: 295.00,
+  TITAN: 3420.00,
+  ADANIENT: 2980.00,
+  ADANIPORTS: 1350.00,
+  POWERGRID: 320.00,
+  TATASTEEL: 152.00,
+  JSWSTEEL: 940.00,
+  COALINDIA: 485.00,
+  ASIANPAINT: 2850.00,
+  HINDUNILVR: 2420.00,
+  ULTRACEMCO: 10850.00,
+  ZOMATO: 265.00,
+  PAYTM: 720.00,
+};
+
 function baseFor(symbol) {
-  const rnd = seededRandom(symbol);
-  const price = round(50 + rnd() ** 2 * 4000, 2);   // ₹50 – ₹4050, skewed lower
-  const vol = 0.15 + rnd() * 0.45;                    // 15%–60% annualised
+  const sym = String(symbol).toUpperCase();
+  if (INDIAN_BENCHMARK_PRICES[sym]) {
+    return { price: INDIAN_BENCHMARK_PRICES[sym], vol: 0.22 };
+  }
+  const rnd = seededRandom(sym);
+  // Realistic Indian equity price distribution: ₹150 – ₹3800
+  const price = round(150 + rnd() * 2500 + (rnd() > 0.85 ? rnd() * 4000 : 0), 2);
+  const vol = 0.18 + rnd() * 0.35;
   return { price, vol };
 }
 
