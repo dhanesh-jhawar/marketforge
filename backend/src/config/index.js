@@ -32,7 +32,7 @@ export const config = Object.freeze({
   server: {
     port: num(env.BACKEND_PORT, 4000),
     publicUrl: env.BACKEND_PUBLIC_URL || 'http://localhost:4000',
-    corsOrigins: list(env.CORS_ORIGINS, ['http://localhost:3000']),
+    corsOrigins: env.CORS_ORIGIN || env.CORS_ORIGINS ? (env.CORS_ORIGIN === '*' ? '*' : list(env.CORS_ORIGIN || env.CORS_ORIGINS)) : '*',
   },
 
   data: {

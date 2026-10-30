@@ -1,6 +1,8 @@
 import { demoStocks, demoIndices, demoPortfolio, demoHoldings, demoNews } from '../../data/demo/fixtures.js';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+const rawApi = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+const cleanApi = rawApi.replace(/\/+$/, '');
+const API_BASE = cleanApi.endsWith('/api') ? cleanApi : `${cleanApi}/api`;
 const USE_DEMO_FALLBACK = process.env.NEXT_PUBLIC_USE_DEMO_FALLBACK === 'true';
 
 let authToken = null;

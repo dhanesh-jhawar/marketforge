@@ -38,7 +38,12 @@ const log = createLogger('server');
 
 export async function createServer() {
   const app = express();
-  app.use(cors({ origin: config.server.corsOrigins, credentials: true }));
+  const corsOrigins = config.server.corsOrigins;
+  const isAllowAll = !corsOrigins || corsOrigins === '*' || (Array.isArray(corsOrigins) && (corsOrigins.includes('*') || corsOrigins.length === 0));
+  app.use(cors({
+    origin: isAllowAll ? true : corsOrigins,
+    credentials: true,
+  }));
   app.use(express.json());
 
   // Health probe

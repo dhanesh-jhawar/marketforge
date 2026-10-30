@@ -50,6 +50,42 @@ export default function LoginPage() {
           </div>
         )}
 
+        <div style={{
+          padding: '0.85rem',
+          borderRadius: 'var(--radius-sm)',
+          background: 'rgba(0, 229, 255, 0.08)',
+          border: '1px solid rgba(0, 229, 255, 0.25)',
+          marginBottom: '1.25rem',
+          fontSize: '12px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <div>
+            <div style={{ color: 'var(--accent-cyan)', fontWeight: 700, letterSpacing: '0.5px' }}>DEMO TRADER ACCOUNT</div>
+            <div style={{ color: 'var(--text-secondary)', marginTop: '2px', fontFamily: 'monospace' }}>trader@marketforge.dev • password123</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail('trader@marketforge.dev');
+              setPassword('password123');
+            }}
+            style={{
+              padding: '5px 12px',
+              fontSize: '11px',
+              fontWeight: 700,
+              background: 'rgba(0, 229, 255, 0.15)',
+              border: '1px solid var(--accent-cyan)',
+              color: 'var(--accent-cyan)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            AUTOFILL
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
             <label style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>Email</label>

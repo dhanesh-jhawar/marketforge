@@ -103,6 +103,7 @@ export async function initDataStore() {
 
     // Always sync latest content.json seeds (lessons, quizzes, questions, glossary, challenges)
     await seedContentData();
+    await seedDemoUsers();
 
     log.info({ path: config.data.sqlitePath }, 'Data store: sqlite initialized');
   } else if (config.data.store === 'postgres') {
@@ -212,4 +213,21 @@ async function seedMemoryStore() {
     { key: 'simulation_mode', value: 'live' },
     { key: 'market_halted', value: false },
   ]);
+}
+
+async function seedDemoUsers() {
+  try {
+    const existing = await repos.users.findOne({ email: 'trader@marketforge.dev' });
+    if (!existing) {
+      const { register } = await import('../services/auth/authService.js');
+      await register({
+        email: 'trader@marketforge.dev',
+        password: 'password123',
+        displayName: 'Market Pioneer',
+      });
+      log.info('Seeded default demo user: trader@marketforge.dev / password123');
+    }
+  } catch (err) {
+    log.warn({ err: err.message }, 'Demo user seeding notice');
+  }
 }
