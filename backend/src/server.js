@@ -57,6 +57,7 @@ export async function createServer() {
   });
   app.get('/health', healthHandler);
   app.get('/api/health', healthHandler);
+  app.get('/', (req, res) => res.json({ name: 'MarketForge API Engine', status: 'operational', endpoints: { health: '/health', api: '/api', websocket: '/ws' }, message: 'Backend is running. Access the UI on Vercel.' }));
 
   // Mount API groups
   app.use('/api/auth', authRoutes);
