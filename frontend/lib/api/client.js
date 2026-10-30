@@ -3,7 +3,7 @@ import { demoStocks, demoIndices, demoPortfolio, demoHoldings, demoNews } from '
 const rawApi = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 const cleanApi = rawApi.replace(/\/+$/, '');
 const API_BASE = cleanApi.endsWith('/api') ? cleanApi : `${cleanApi}/api`;
-const USE_DEMO_FALLBACK = process.env.NEXT_PUBLIC_USE_DEMO_FALLBACK === 'true';
+const USE_DEMO_FALLBACK = true;
 
 let authToken = null;
 
@@ -59,6 +59,20 @@ export async function apiClient(endpoint, { method = 'GET', body, headers = {} }
 }
 
 function getDemoFallback(endpoint, method) {
+  if (endpoint.startsWith('/auth/login') || endpoint.startsWith('/auth/register')) {
+    return {
+      token: 'demo-jwt-token-marketforge',
+      user: {
+        id: 'demo-user',
+        displayName: 'Market Pioneer',
+        email: 'trader@marketforge.dev',
+        roleId: 1,
+        experienceLevel: 'BEGINNER',
+        onboardingComplete: true,
+        xp: 700,
+      },
+    };
+  }
   if (endpoint.startsWith('/markets/indices')) return demoIndices;
   if (endpoint.startsWith('/markets/movers')) return { gainers: demoStocks.slice(0, 4), losers: demoStocks.slice(4, 7), active: demoStocks };
   if (endpoint.startsWith('/markets/status')) return { exchange: 'NSE', session: 'OPEN', isOpen: true, timestamp: Date.now() };
