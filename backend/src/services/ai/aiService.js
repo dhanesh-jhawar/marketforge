@@ -159,7 +159,7 @@ Evaluate the position impact (${snapshot?.newPositionPct || snapshot?.portfolioI
     return { explanation: result.text };
   },
 
-  /** Explains a financial news article in simple educational terms */
+  /** Explains a financial news article in simple educational terms following the MarketForge 4-pillar pedagogical format */
   async explainNews(input) {
     let article = null;
     if (typeof input === 'string') {
@@ -168,16 +168,53 @@ Evaluate the position impact (${snapshot?.newPositionPct || snapshot?.portfolioI
       if (input.newsId) article = await newsService.getById(input.newsId).catch(() => null);
       if (!article) article = input;
     }
-    const prompt = `Break down this financial news headline and article for a beginner trader in the Indian stock market. What does it mean for the tagged stocks?`;
+
+    const title = article?.title || article?.headline || 'Financial Market Update';
+    const summary = article?.summary || article?.description || '';
+    const symbols = article?.symbols || [];
+    const source = article?.source || article?.sourceName || 'Market Wire';
+    const sector = article?.sector || article?.category || 'Equities';
+
+    const prompt = `You are MarketForge Pedagogical Intelligence. Explain this Indian stock market news article for a virtual learning platform student.
+Article Title: "${title}"
+Summary: "${summary}"
+Source: "${source}"
+Sector: "${sector}"
+Tagged Symbols: ${JSON.stringify(symbols)}
+
+CRITICAL FORMATTING INSTRUCTIONS:
+Structure your answer directly in these 4 uppercase labeled sections:
+
+1. WHAT HAPPENED
+Explain the factual event in simple, direct, accessible terms.
+
+2. WHY IT MATTERS
+Explain why market participants, institutions, or analysts care about this development.
+
+3. POSSIBLE MARKET MECHANISM
+Explain the underlying financial mechanics (e.g., liquidity flow, cost of debt, raw material pricing, margin expansion, demand-supply shock) that connect this event to corporate balance sheets or stock price fluctuations.
+
+4. WHAT TO WATCH
+List 2-3 observable indicators, follow-up reports, or metric triggers that a prudent learner should monitor over the upcoming sessions.
+
+MANDATORY RULES:
+- DO NOT generate guaranteed future price predictions.
+- DO NOT say "Buy this stock" or "Sell this stock".
+- Keep tone objective, educational, disciplined, and focused on risk awareness.`;
 
     const providers = getProviders();
     const result = await providers.ai.generate({
       system: SYSTEM_INSTRUCTION,
       messages: [{ role: 'user', content: prompt }],
-      grounding: { article: article || { title: 'Market Wire Update' } },
+      grounding: { article: article || { title } },
     });
 
-    return { explanation: result.text };
+    return {
+      explanation: result.text,
+      message: result.text,
+      reply: result.text,
+      article,
+    };
   },
 
   /** Explains overall portfolio health, diversification score, and risk concentration */

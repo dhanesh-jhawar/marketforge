@@ -64,7 +64,12 @@ function TradeTerminal() {
   // Historical candles for current symbol
   const [candles, setCandles] = useState([]);
   const { quote } = useMarketData(symbol);
-  const { summary } = usePortfolio();
+  const { summary, holdings, refresh: refreshPortfolio } = usePortfolio();
+
+  const currentHolding = useMemo(() => {
+    return holdings?.find((h) => h.symbol === symbol) || null;
+  }, [holdings, symbol]);
+  const heldQuantity = currentHolding?.quantity || 0;
 
   // Fetch candle history whenever symbol changes
   useEffect(() => {
@@ -299,6 +304,7 @@ function TradeTerminal() {
       });
       setOrderSuccess(order);
       setShowIntelligenceModal(false);
+      refreshPortfolio();
     } catch (err) {
       alert(err.message || 'Order failed');
     } finally {
@@ -621,6 +627,25 @@ function TradeTerminal() {
               </button>
             </div>
 
+            {/* Position / Holding Awareness Banner */}
+            {side === 'SELL' && heldQuantity === 0 && (
+              <div style={{ padding: '8px 10px', background: 'rgba(255, 77, 103, 0.12)', border: '1px solid #FF4D67', borderRadius: '2px', fontSize: '11px', color: '#FF4D67', lineHeight: 1.4 }}>
+                ⚠ <b>0 Shares Held:</b> You currently hold 0 shares of {symbol} in your portfolio. Short selling is disabled in CNC mode. Switch to BUY or select a stock you own from your portfolio.
+              </div>
+            )}
+            {side === 'SELL' && heldQuantity > 0 && (
+              <div style={{ padding: '8px 10px', background: 'rgba(57, 255, 136, 0.1)', border: '1px solid rgba(57, 255, 136, 0.4)', borderRadius: '2px', fontSize: '11px', color: '#39FF88', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>You hold <b>{heldQuantity}</b> shares of {symbol}</span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity(heldQuantity)}
+                  style={{ background: '#39FF88', color: '#030807', border: 'none', padding: '2px 8px', borderRadius: '2px', fontWeight: 900, fontSize: '10px', cursor: 'pointer' }}
+                >
+                  SELL ALL ({heldQuantity})
+                </button>
+              </div>
+            )}
+
             {/* Product & Order Type Selector */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <div>
@@ -843,7 +868,7 @@ function TradeTerminal() {
             </div>
 
             {/* Modal Body: Financial Telemetry & Company Intelligence */}
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '72vh', overflowY: 'auto' }}>
+            <div onWheel={(e) => { e.currentTarget.scrollTop += e.deltaY; }} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '72vh', overflowY: 'auto', overscrollBehavior: 'contain', scrollBehavior: 'smooth' }}>
               <div style={{ fontSize: '13px', color: '#DDFBEA' }}>
                 Ordering <b style={{ color: side === 'BUY' ? '#39FF88' : '#FF4D67' }}>{side} {quantity} SHARES</b> of <b style={{ color: '#38D9FF' }}>{symbol}</b> ({orderType} • {product})
               </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useMarket } from '../../context/MarketContext.jsx';
@@ -20,6 +20,21 @@ export default function GlobalAIAssistant() {
       text: 'Greetings Trader. I am your MarketForge AI Intelligence Layer. I can explain order risk, market dynamics, technical patterns, and financial concepts. I will never tell you what to buy.',
     },
   ]);
+  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  }, [messages, loading, isOpen]);
+
+  const handleScrollWheel = (e) => {
+    if (messagesContainerRef.current) {
+      e.stopPropagation();
+      messagesContainerRef.current.scrollTop += e.deltaY;
+    }
+  };
 
   // Context-aware suggested prompts based on current route
   const getContextualPrompts = () => {
@@ -212,9 +227,14 @@ export default function GlobalAIAssistant() {
 
           {/* Messages Stream */}
           <div
+            ref={messagesContainerRef}
+            onWheel={handleScrollWheel}
             style={{
               flex: 1,
               overflowY: 'auto',
+              overscrollBehavior: 'contain',
+              scrollBehavior: 'smooth',
+              WebkitOverflowScrolling: 'touch',
               padding: '16px',
               display: 'flex',
               flexDirection: 'column',

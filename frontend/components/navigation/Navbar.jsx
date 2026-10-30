@@ -11,6 +11,11 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const { indices } = useMarket();
 
+  // Remove the navbar from the landing page until user is signed in
+  if (pathname === '/' && !user) {
+    return null;
+  }
+
   // Active route helper
   const isActive = (route) => pathname === route;
 
@@ -121,8 +126,10 @@ export default function Navbar() {
               { label: 'Portfolio', path: '/portfolio' },
               { label: 'Orders', path: '/orders' },
               { label: 'News', path: '/news' },
-              { label: 'Learn', path: '/learn' },
+              { label: 'Replay', path: '/replay' },
               { label: 'What-If', path: '/what-if' },
+              { label: 'Learn', path: '/learn' },
+              
               { label: 'Challenges', path: '/challenges' },
               { label: 'AI Mentor', path: '/ai' },
               { label: 'Glossary', path: '/glossary' },

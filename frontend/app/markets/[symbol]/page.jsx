@@ -117,7 +117,27 @@ export default function StockDetailPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Link
+                href={`/replay?symbol=${symbol}`}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '2px',
+                  background: 'rgba(56, 217, 255, 0.12)',
+                  color: '#38D9FF',
+                  border: '1px solid #38D9FF',
+                  fontWeight: 900,
+                  fontSize: '12px',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 0 12px rgba(56, 217, 255, 0.25)',
+                }}
+              >
+                <span>▶</span>
+                <span>REPLAY THIS STOCK</span>
+              </Link>
               <Link
                 href={`/trade?symbol=${symbol}&side=BUY`}
                 style={{

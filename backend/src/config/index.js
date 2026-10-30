@@ -1,8 +1,19 @@
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT_DIR = path.resolve(__dirname, '../../..');
+
+// Automatically load root .env file if available
+const envFile = path.resolve(ROOT_DIR, '.env');
+if (fs.existsSync(envFile) && typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile(envFile);
+  } catch (err) {
+    // Ignore if already loaded
+  }
+}
 
 const env = process.env;
 const list = (v, d) => (v ? v.split(',').map((s) => s.trim()).filter(Boolean) : d);
@@ -68,7 +79,7 @@ export const config = Object.freeze({
     newsapi: { apiKey: env.NEWSAPI_KEY, baseUrl: env.NEWSAPI_BASE_URL || 'https://newsapi.org/v2' },
     gemini: {
       apiKey: env.GEMINI_API_KEY,
-      model: env.GEMINI_MODEL || 'gemini-2.0-flash',
+      model: env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
       baseUrl: env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta',
     },
     nse: {

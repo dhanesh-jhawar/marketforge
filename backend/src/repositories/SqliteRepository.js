@@ -268,6 +268,14 @@ export class SqliteRepository extends Repository {
     return rows.length;
   }
 
+  async deleteMany(where = {}) {
+    const w = this.#where(where);
+    const sql = `DELETE FROM ${this.table} ${w.sql}`;
+    const stmt = this.db.prepare(sql);
+    const res = stmt.run(...w.values);
+    return res.changes;
+  }
+
   async delete(id) {
     const w = this.#pkWhere(id);
     const sql = `DELETE FROM ${this.table} WHERE ${w.sql}`;

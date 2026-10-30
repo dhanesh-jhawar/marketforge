@@ -1,8 +1,8 @@
 /* MarketForge styling overrides for React Bits components */
 
-.gradient-ascii-container {
-  position: relative;
-  overflow: hidden;
+.gradient-ascii-container,
+.gradient-ascii-canvas {
+  background: transparent !important;
   border-radius: var(--radius-xs);
 }
 

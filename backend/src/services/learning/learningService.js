@@ -21,9 +21,11 @@ export const learningService = {
     const lesson = await repos.lessons.findById(id);
     if (!lesson) throw ApiError.notFound('Lesson not found');
     let quiz = null;
-    if (lesson.quizId) {
-      const q = await repos.quizzes.findById(lesson.quizId);
-      if (q) quiz = toPublicQuiz(q);
+    const q = (lesson.quizId ? await repos.quizzes.findById(lesson.quizId) : null)
+      || await repos.quizzes.findOne({ lessonId: id });
+    if (q) {
+      const questions = await repos.questions.findMany({ quizId: q.id }, { orderBy: 'orderIndex' });
+      quiz = toPublicQuiz({ ...q, questions });
     }
     return { ...lesson, quiz };
   },
@@ -45,7 +47,10 @@ export const learningService = {
     const quiz = await repos.quizzes.findById(quizId);
     if (!quiz) throw ApiError.notFound('Quiz not found');
 
-    const result = scoreQuiz(quiz, answers);
+    const questions = await repos.questions.findMany({ quizId }, { orderBy: 'orderIndex' });
+    const fullQuiz = { ...quiz, questions };
+
+    const result = scoreQuiz(fullQuiz, answers);
 
     await repos.quizResults.insert({
       id: uuid(),

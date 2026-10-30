@@ -7,7 +7,7 @@ INSERT INTO roles (id, name, description) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO market_rules (id, label, value, severity, description) VALUES
-  ('maxPositionPct',  'Max single-stock position %', '20', 'BLOCKING', 'Max % of portfolio value in one stock after the order'),
+  ('maxPositionPct',  'Max single-stock position %', '20', 'WARNING',  'Max % of portfolio value in one stock after the order'),
   ('maxSectorPct',    'Max sector exposure %',       '40', 'WARNING',  'Max % of portfolio value in one sector after the order'),
   ('maxOrderValuePct','Max order value %',           '25', 'WARNING',  'Single order value as % of portfolio value'),
   ('maxDailyOrders',  'Max orders per day',          '50', 'BLOCKING', 'Prevents spam / overtrading'),

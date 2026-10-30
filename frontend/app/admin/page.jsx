@@ -13,10 +13,10 @@ const DATA_PROVIDERS = [
 ];
 
 const AUDIT_LOGS = [
-  { timestamp: '2026-10-29 22:45:10', admin: 'sysadmin@marketforge.io', action: 'UPDATE_RULE', resource: 'MAX_POSITION_PCT', before: '30%', after: '25%', ip: '10.0.4.12', status: 'SUCCESS' },
-  { timestamp: '2026-10-29 21:12:04', admin: 'quant@marketforge.io', action: 'SYNC_EQUITIES', resource: 'SECURITY_MASTER', before: '2,580', after: '2,620', ip: '10.0.4.15', status: 'SUCCESS' },
+  { timestamp: '2026-10-29 22:45:10', admin: 'sysadmin@marketforge.dev', action: 'UPDATE_RULE', resource: 'MAX_POSITION_PCT', before: '30%', after: '25%', ip: '10.0.4.12', status: 'SUCCESS' },
+  { timestamp: '2026-10-29 21:12:04', admin: 'quant@marketforge.dev', action: 'SYNC_EQUITIES', resource: 'SECURITY_MASTER', before: '2,580', after: '2,620', ip: '10.0.4.15', status: 'SUCCESS' },
   { timestamp: '2026-10-29 19:30:00', admin: 'system_cron', action: 'DAILY_PORTFOLIO_SNAPSHOT', resource: 'PORTFOLIO_ACCOUNTS', before: '-', after: '1,248 accounts', ip: '127.0.0.1', status: 'SUCCESS' },
-  { timestamp: '2026-10-29 18:05:42', admin: 'risk_officer@marketforge.io', action: 'TOGGLE_MARKET', resource: 'SIMULATION_CLOCK', before: 'OPEN', after: 'NORMAL_SIM', ip: '10.0.4.22', status: 'SUCCESS' },
+  { timestamp: '2026-10-29 18:05:42', admin: 'risk_officer@marketforge.dev', action: 'TOGGLE_MARKET', resource: 'SIMULATION_CLOCK', before: 'OPEN', after: 'NORMAL_SIM', ip: '10.0.4.22', status: 'SUCCESS' },
 ];
 
 export default function AdminPage() {

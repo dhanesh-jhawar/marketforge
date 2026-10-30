@@ -1,10 +1,24 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAI } from '../../context/AIContext.jsx';
 
 export default function AIPage() {
   const { messages, loading, sendMessage } = useAI();
   const [input, setInput] = useState('');
+  const historyRef = useRef(null);
+
+  useEffect(() => {
+    if (historyRef.current) {
+      historyRef.current.scrollTop = historyRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
+
+  const handleScrollWheel = (e) => {
+    if (historyRef.current) {
+      e.stopPropagation();
+      historyRef.current.scrollTop += e.deltaY;
+    }
+  };
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -25,11 +39,16 @@ export default function AIPage() {
 
       {/* Message History */}
       <div
+        ref={historyRef}
+        onWheel={handleScrollWheel}
         className="glass-panel"
         style={{
           flex: 1,
           padding: '1.5rem',
           overflowY: 'auto',
+          overscrollBehavior: 'contain',
+          scrollBehavior: 'smooth',
+          WebkitOverflowScrolling: 'touch',
           display: 'flex',
           flexDirection: 'column',
           gap: '1.25rem',

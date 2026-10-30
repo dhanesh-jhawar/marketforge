@@ -6,20 +6,46 @@
 
 > [!IMPORTANT]
 > **MarketForge is NOT a real-money brokerage.**
-> It is a virtual trading sandbox, learning curriculum, and scenario simulator designed to build disciplined trading habits.
+> Every trade is virtual. Every user begins with **₹1,00,000 in simulated learning capital**.
+> It is an educational sandbox, risk-management lab, historical replay simulator, and structured curriculum designed to build disciplined trading habits.
 
 ---
 
-## 🌟 Key Architecture Highlights
+## 🌟 Key Architecture & Feature Highlights
 
-1. **Zero Direct Frontend Third-Party Connections:**
-   The frontend communicates **exclusively** with the MarketForge backend. The backend normalizes external providers (TejHQ, FYERS, Twelve Data, GNews, NewsAPI, NSE, Gemini) into a unified internal data model.
-2. **AI Never Calculates Risk Numbers (Rule 9):**
-   Pure, deterministic JavaScript/TypeScript engines calculate order values, margin requirements, position percentages, sector concentrations, 30-day volatility, potential losses at -5% / -10%, and SEBI rule violations. Google Gemini only receives pre-computed facts and explains them in pedagogical language.
-3. **Full NSE Security Master Universe:**
-   The application is not limited to a few hardcoded stocks. It synchronizes the complete universe of equities listed on the National Stock Exchange of India (NSE) directly from `EQUITY_L.csv`.
-4. **Rich Aesthetics & Advanced Motion:**
-   Next.js 14 App Router, Highcharts Stock professional charts, Three.js 3D hero visualization (`CrystalizedBall`), animated ASCII streams (`GradientASCII`), `CircularCarousel`, `TextType`, Lenis smooth scrolling, and dark obsidian glassmorphism.
+1. **Complete Virtual Trading Environment & Realistic Matching Engine:**
+   - Simulated execution of **Cash & Carry (CNC)** and **Margin Intraday Square-off (MIS)** orders.
+   - Live order book simulation with Price-Time Priority and First-Come-First-Serve matching against synthetic depth.
+   - Comprehensive Order Intelligence pre-trade deterministic risk assessment before any order is submitted.
+
+2. **Market Replay Engine (`/replay`):**
+   - Interactive historical replay system allowing users to select any NSE company and historical date range.
+   - Candlesticks reveal progressively as time advances, with configurable playback speed (0.25x to 50x) and draggable timeline scrubbing.
+   - Computes deterministic analytics: maximum drawdown, annualized volatility, best/worst day, consecutive session streaks, and recovery times.
+   - **"Why Did It Move?" (Rise/Fall Analysis)**: Attributes price movement to verifiable bullish/bearish drivers (earnings, sector momentum, capex, macro events) without inventing facts.
+   - Seamless scenario testing: launch What-If simulations directly from replayed candles.
+
+3. **Financial News Terminal (`/news`) with Contextual Imagery:**
+   - Real-time exchange news wire enriched with high-resolution contextual imagery via the backend Unsplash image provider.
+   - SQLite-cached image metadata to eliminate redundant external API requests.
+   - High-contrast MarketForge financial fallback graphics for articles without source images.
+   - Live stock movement badges with LTP & daily change %, linking directly to stock detail and replay engines.
+   - **4-Pillar AI News Breakdown**: Explains What Happened, Why It Matters, Possible Market Mechanism, and What to Watch.
+
+4. **Zero Direct Frontend Third-Party Connections:**
+   - The frontend communicates **exclusively** with the MarketForge backend.
+   - The backend normalizes external providers (TejHQ, Twelve Data, GNews, NewsAPI, NSE, Gemini) through resilient fallback chains.
+
+5. **AI Never Calculates Risk Numbers (Deterministic Rule Enforcement):**
+   - Pure, deterministic JavaScript engines calculate order values, margin requirements, position percentages, sector concentrations, 30-day volatility, potential losses at -5% / -10%, and SEBI rule violations.
+   - Google Gemini only receives pre-computed facts and explains them in pedagogical language.
+
+6. **Full NSE Security Master Universe:**
+   - Supports 2,000+ active equities listed on the National Stock Exchange of India (NSE) synchronized from official exchange records.
+
+7. **Rich Motion & Financial Aesthetics:**
+   - Next.js 14 App Router with obsidian glassmorphism, glowing neon-green accents, and Highcharts Stock implementation.
+   - React Bits components: `GradientASCII` digital horizon, `CrystalizedBall` 3D orb, `CircularCarousel` capabilities cylinder, and `TextType` dynamic typing.
 
 ---
 
@@ -28,85 +54,105 @@
 ```
 marketforge/
 ├── frontend/             # Next.js 14 App Router full frontend
-│   ├── app/              # 18 App Router pages (trade, markets, learn, what-if, ai, admin...)
-│   ├── components/       # UI, Navigation, Highcharts Stock, Landing
+│   ├── app/              # App Router routes (trade, markets, learn, replay, what-if, ai, admin...)
+│   ├── components/       # Highcharts Stock, trading modals, navigation, AI terminal
 │   ├── components/react-bits/ # GradientASCII, CrystalizedBall, CircularCarousel, TextType
-│   ├── context/          # AuthContext, MarketContext, AIContext, AppContext
+│   ├── context/          # AuthContext, MarketContext, AIContext, PortfolioContext
 │   ├── hooks/            # useMarketData, usePortfolio, useOrders, useScrollAnimation
-│   ├── lib/              # apiClient, wsClient, formatters
-│   ├── styles/           # variables.css, globals.css, charts.css, animations.css
-│   └── data/demo/        # Seeded fixtures for offline development
+│   ├── lib/              # apiClient, wsClient, replayApi, newsApi, formatters
+│   └── styles/           # variables.css, globals.css, charts.css, react-bits-overrides.css
 │
 ├── backend/              # Node.js Express + WebSocket backend service
 │   ├── src/
-│   │   ├── server.js     # Express + WS server mounting all 16 route groups
-│   │   ├── engines/      # Pure deterministic engines (risk, matching, portfolio, learning, what-if)
-│   │   ├── providers/    # Provider fallback chains (tejhq, fyers, twelvedata, gnews, newsapi, gemini, nse, mock)
-│   │   ├── services/     # Domain services (auth, market, historical, risk, order, portfolio, ai, admin...)
-│   │   ├── routes/       # 16 REST API route modules
-│   │   ├── repositories/ # Swappable Repository pattern (Memory & Postgres implementations)
-│   │   ├── websocket/    # Canonical WebSocket server & in-process domain event bus
-│   │   └── workers/      # Security master sync, market poll, news sync
-│   └── tests/            # Deterministic engine unit tests
+│   │   ├── server.js     # Express + WS server mounting all 18 route groups
+│   │   ├── engines/      # Pure deterministic engines (risk, matching, portfolio, learning)
+│   │   ├── providers/    # Fallback chains (tejhq, twelvedata, gnews, newsapi, gemini, nse, mock, images)
+│   │   ├── services/     # Domain services (auth, market, historical, replay, risk, order, portfolio, news, ai)
+│   │   ├── routes/       # 18 REST API route modules (including /api/replay, /api/news, /api/trade)
+│   │   ├── repositories/ # SQLite Repository implementation with node:sqlite WAL mode
+│   │   └── websocket/    # Canonical WebSocket server & in-process domain event bus
+│   └── tests/            # Test suites
 │
 ├── shared/               # Shared contracts package (@marketforge/shared)
 │   ├── types/            # Normalized types (market, stock, order, portfolio, news, learning, user)
 │   └── constants/        # WebSocket event names, market hours, risk defaults, order enums
 │
-├── database/             # PostgreSQL / Supabase persistence
-│   ├── migrations/       # 001_initial_schema.sql, 002_rls_policies.sql
-│   ├── seeds/            # Reference data, sample NSE universe CSV, demo content
-│   └── schemas/          # ERD and database documentation
+├── database/             # SQLite database persistence
+│   ├── migrations/       # Schema definitions (users, orders, holdings, news, replay, quizzes)
+│   └── seeds/            # Reference data, sample NSE universe, educational curriculum
 │
-├── docs/                 # architecture.md, api.md
-├── scripts/              # Migration, seeding, security sync, and environment check scripts
-├── .env.example          # Environment template
-└── docker-compose.yml    # Full local stack (Postgres, backend, frontend)
+└── scripts/              # Migration, seeding, and verification utilities
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Prerequisites
-- Node.js >= 20
-- npm >= 10
+### Prerequisites
+- Node.js 18+ (tested on Node.js 20 & 24)
+- npm or pnpm
 
-### 2. Environment Setup
+### 1. Clone & Install Dependencies
 ```bash
-# Check or create default .env
-node scripts/check-env.js
+git clone https://github.com/dhanesh-jhawar/marketforge.git
+cd marketforge
+npm install
 ```
 
-### 3. Install Dependencies
+### 2. Environment Configuration
+Copy `.env.example` to `.env`:
 ```bash
-# Install shared and backend dependencies
-npm install --workspace shared
-npm install --workspace backend
-npm install --workspace frontend
+cp .env.example .env
 ```
 
-### 4. Run Tests
-Validate that the deterministic engines run with mathematical precision:
-```bash
-npm run test
+Ensure default keys are configured for development:
+```env
+PORT=4000
+DATA_STORE=sqlite
+SQLITE_PATH=database/marketforge.db
+GEMINI_API_KEY=<your-gemini-key>
+TWELVE_DATA_API_KEY=<your-twelve-data-key>
+GNEWS_API_KEY=<your-gnews-key>
 ```
 
-### 5. Start Development
+### 3. Initialize Database
 ```bash
-# Run backend (port 4000)
-npm run dev:backend
-
-# In a separate terminal, run frontend (port 3000)
-npm run dev:frontend
+npm run db:migrate
+npm run db:seed
 ```
-Visit [http://localhost:3000](http://localhost:3000) to open the MarketForge cockpit.
+
+### 4. Run Development Servers
+Start both backend (port 4000) and frontend (port 3000):
+```bash
+# Terminal 1: Backend
+npm run dev --workspace backend
+
+# Terminal 2: Frontend
+npm run dev --workspace frontend
+```
+
+Access the application:
+- **Frontend App**: `http://localhost:3000`
+- **Replay Engine**: `http://localhost:3000/replay`
+- **News Terminal**: `http://localhost:3000/news`
+- **Backend API & Health**: `http://localhost:4000/api/health`
+- **WebSocket Feed**: `ws://localhost:4000/ws`
 
 ---
 
-## 🐳 Docker Deployment
-To run with PostgreSQL:
+## 🧪 Testing & Build Verification
+
+Run production build:
 ```bash
-docker compose up -d
+npm run build --workspace frontend
 ```
-All database migrations apply automatically on the first boot.
+
+Run test suite:
+```bash
+npm test --workspace backend
+```
+
+---
+
+## 📜 License
+This project is for educational and learning purposes. MarketForge is not a registered investment advisor or financial intermediary. All market orders, capital, and risk metrics are completely virtual.

@@ -32,6 +32,7 @@ import studyplanRoutes from './routes/studyplan.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import glossaryRoutes from './routes/glossary.routes.js';
+import replayRoutes from './routes/replay.routes.js';
 
 const log = createLogger('server');
 
@@ -77,6 +78,7 @@ export async function createServer() {
   app.use('/api/ai', aiRoutes);
   app.use('/api/admin', adminRoutes);
   app.use('/api/glossary', glossaryRoutes);
+  app.use('/api/replay', replayRoutes);
 
   // Global error handler
   app.use(errorHandler);

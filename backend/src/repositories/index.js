@@ -34,6 +34,8 @@ const TABLES = {
 
   news: { table: 'news', pk: 'id' },
   newsStocks: { table: 'news_stocks', pk: ['newsId', 'symbol'] },
+  replaySessions: { table: 'replay_sessions', pk: 'id' },
+  replayEvents: { table: 'replay_events', pk: 'id' },
 
   lessons: { table: 'lessons', pk: 'id' },
   lessonProgress: { table: 'lesson_progress', pk: ['userId', 'lessonId'] },
@@ -99,7 +101,7 @@ export async function initDataStore() {
       repos[name] = new SqliteRepository({ name, ...def }, sqliteDb);
     }
 
-    // Always sync latest content.json seeds (lessons, quizzes, glossary, challenges)
+    // Always sync latest content.json seeds (lessons, quizzes, questions, glossary, challenges)
     await seedContentData();
 
     log.info({ path: config.data.sqlitePath }, 'Data store: sqlite initialized');
@@ -125,12 +127,36 @@ async function seedContentData() {
   try {
     const content = JSON.parse(await fs.readFile(contentPath, 'utf8'));
     if (content.lessons) await repos.lessons.upsertMany(content.lessons);
-    if (content.quizzes) await repos.quizzes.upsertMany(content.quizzes);
+    
+    if (content.quizzes) {
+      for (const quiz of content.quizzes) {
+        const { questions, ...quizData } = quiz;
+        await repos.quizzes.upsert(quizData);
+        if (Array.isArray(questions)) {
+          if (typeof repos.questions.deleteMany === "function") { await repos.questions.deleteMany({ quizId: quiz.id }); }
+          for (let i = 0; i < questions.length; i++) {
+            const q = questions[i];
+            await repos.questions.upsert({
+              id: q.id,
+              quizId: quiz.id,
+              prompt: q.prompt,
+              type: q.type || 'single',
+              options: q.options || [],
+              answer: q.answer,
+              explanation: q.explanation || '',
+              skillArea: q.skillArea || 'market_basics',
+              orderIndex: i,
+            });
+          }
+        }
+      }
+    }
+
     if (content.glossary) await repos.glossary.upsertMany(content.glossary);
     if (content.scenarios) await repos.scenarios.upsertMany(content.scenarios);
     if (content.challenges) await repos.challenges.upsertMany(content.challenges.map((c) => ({ isActive: true, ...c })));
     if (content.onboardingQuestions) await repos.marketConfig.upsert({ key: 'onboardingQuestions', value: content.onboardingQuestions });
-    log.info('Initial educational content seeded successfully');
+    log.info('Initial educational content and questions seeded successfully');
   } catch (err) {
     log.warn({ err: err.message }, 'Could not seed content data');
   }
@@ -140,7 +166,30 @@ async function seedContentData() {
 async function seedMemoryStore() {
   const content = JSON.parse(await fs.readFile(path.join(config.data.seedsDir, 'content.json'), 'utf8'));
   await repos.lessons.insertMany(content.lessons);
-  await repos.quizzes.insertMany(content.quizzes);
+  
+  if (content.quizzes) {
+    for (const quiz of content.quizzes) {
+      const { questions, ...quizData } = quiz;
+      await repos.quizzes.upsert(quizData);
+      if (Array.isArray(questions)) {
+        for (let i = 0; i < questions.length; i++) {
+          const q = questions[i];
+          await repos.questions.upsert({
+            id: q.id,
+            quizId: quiz.id,
+            prompt: q.prompt,
+            type: q.type || 'single',
+            options: q.options || [],
+            answer: q.answer,
+            explanation: q.explanation || '',
+            skillArea: q.skillArea || 'market_basics',
+            orderIndex: i,
+          });
+        }
+      }
+    }
+  }
+
   await repos.glossary.insertMany(content.glossary);
   await repos.scenarios.insertMany(content.scenarios);
   await repos.challenges.insertMany(content.challenges.map((c) => ({ isActive: true, ...c })));

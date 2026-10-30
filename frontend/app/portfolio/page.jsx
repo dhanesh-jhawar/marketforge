@@ -43,11 +43,11 @@ export default function PortfolioPage() {
     ];
   }, [holdings]);
 
-  const totalValue = activeHoldings.reduce((acc, h) => acc + h.currentValue, 0) + (summary?.funds?.availableCash || 21958.5);
+  const availableCash = summary?.availableCash ?? summary?.funds?.availableCash ?? 100000;
+  const totalValue = (summary?.totalValue ?? summary?.portfolioValue) || (activeHoldings.reduce((acc, h) => acc + (h.currentValue || 0), 0) + availableCash);
   const totalInvested = activeHoldings.reduce((acc, h) => acc + (h.investedValue || h.quantity * h.avgPrice), 0);
   const totalPnl = activeHoldings.reduce((acc, h) => acc + h.pnl, 0);
   const totalPnlPct = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
-  const availableCash = summary?.funds?.availableCash || 21958.5;
 
   // Sector breakdown
   const sectorBreakdown = useMemo(() => {
