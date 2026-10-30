@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: marketforge-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: NODE_ENV
+        value: production
+      - key: DATA_STORE
+        value: sqlite
+      - key: SQLITE_PATH
+        value: /app/database/marketforge.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: "*"
